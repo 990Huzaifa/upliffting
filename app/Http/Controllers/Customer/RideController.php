@@ -185,11 +185,11 @@ class RideController extends Controller
         }
     }
 
-    public function cancelRide(Request $request, $rideId): JsonResponse
+    public function cancelRide(Request $request, $id): JsonResponse
     {
         try {
             $user = Auth::user();
-            $ride = Rides::findOrFail($rideId);
+            $ride = Rides::findOrFail($id);
             if ($ride->customer_id !== $user->id) {
                 throw new Exception('You are not authorized to cancel this ride.', 403);
             }

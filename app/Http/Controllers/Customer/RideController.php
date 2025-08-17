@@ -197,10 +197,17 @@ class RideController extends Controller
             if ($ride->status === 'completed' || $ride->status === 'cancelled') {
                 throw new Exception('This ride cannot be cancelled.', 400);
             }
+            $validator = Validator::make($request->all(), [
+                'reason' => 'nullable|string|max:255',
+            ], [
+                'reason.string' => 'Reason must be a string.',
+                'reason.max' => 'Reason cannot exceed 255 characters.',
+            ]);
+            if ($validator->fails()) throw new Exception($validator->errors()->first(), 401);
 
             $ride->update([
                 'status' => 'cancelled',
-                'reason' => $request->reason ?? 'No reason provided',
+                'reason' => $request->reason,
             ]);
 
             return response()->json(['message' => 'Ride cancelled successfully.'], 200);

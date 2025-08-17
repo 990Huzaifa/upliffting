@@ -1,0 +1,35 @@
+name: Deploy Laravel to SFTP
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: |
+        composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
+
+    - name: Upload via SFTP
+      uses: pressidium/lftp-mirror-action@v1.0.0
+      with:
+        host: ${{ secrets.SFTP_HOST }}
+        port: ${{ secrets.SFTP_PORT }}
+        user: ${{ secrets.SFTP_USERNAME }}
+        pass: ${{ secrets.SFTP_PASSWORD }}
+        localDir: '.'  
+        remoteDir: ${{ secrets.SFTP_REMOTE_PATH }}
+        verifycertificate: "false"
+        exclude: |
+          vendor/*
+          public/*
+        clean: false
+        force: false
+        verbose: true

@@ -213,6 +213,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         Route::post('calculate-fare', [CustomerRideController::class, 'calculateFare']);
         Route::post('request-ride', [CustomerRideController::class, 'store']);
+        Route::post('cancel-ride', [CustomerRideController::class, 'cancelRide']);
         Route::get('vehicle-type', [VehicleTypeRateController::class, 'list2']);
         
     });

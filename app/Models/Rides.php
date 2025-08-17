@@ -24,6 +24,6 @@ class Rides extends Model
         'rider_id',
         'vehicle_id',
         'promo_code_id',
-
+        'reason',
     ];
 }

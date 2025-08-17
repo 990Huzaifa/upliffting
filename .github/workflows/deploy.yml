@@ -1,4 +1,4 @@
-name: Deploy Laravel to SFTP
+name: 🚀 Deploy Logix Hrm on Development server
 
 on:
   push:
@@ -6,27 +6,28 @@ on:
       - main
 
 jobs:
-  deploy:
+  web-deploy:
+    name: 🎉 Deploy
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+    # Checkout the code
+    - name: 🚚 Get latest code
+      uses: actions/checkout@v2
 
-    - name: Install dependencies
-      run: |
-        composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
+    # - name: 🐘 Install Composer Dependencies
+    #   run: composer install --prefer-dist --no-progress --no-suggest
 
-    - name: Upload via SFTP
-      uses: pressidium/lftp-mirror-action@v1.0.0
+    # - name: 🐘 Run Database Migrations
+    #   run: php artisan migrate
+
+    # Deploy files via FTP
+    - name: 📂 Sync files
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
       with:
-        host: ${{ secrets.SFTP_HOST }}
-        port: ${{ secrets.SFTP_PORT }}
-        user: ${{ secrets.SFTP_USERNAME }}
-        pass: ${{ secrets.SFTP_PASSWORD }}
-        localDir: '.'  
-        remoteDir: ${{ secrets.SFTP_REMOTE_PATH }}
-        verifycertificate: "false"
+        server: ${{ secrets.FTP_HOST }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
         exclude: |
           vendor/*
           public/*

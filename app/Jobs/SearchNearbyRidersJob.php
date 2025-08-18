@@ -42,9 +42,9 @@ class SearchNearbyRidersJob implements ShouldQueue
 
         // Search for riders in current radius
         $riders = $this->findNearbyRiders($ride);
+        return $this->notifyCustomerNoRidersFound($ride);
         if (!empty($riders)) {
             // Found riders - notify them and wait for response
-            return $this->notifyCustomerNoRidersFound($ride);
             NotifyRidersJob::dispatch($this->rideId, $riders, $this->currentRadius);
         } else {
             // No riders found - increase radius or give up

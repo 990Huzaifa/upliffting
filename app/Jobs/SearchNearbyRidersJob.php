@@ -138,13 +138,14 @@ class SearchNearbyRidersJob implements ShouldQueue
                 'status' => 'no_riders_found'
             ];
             $firebaseService = new FirebaseService();
-            $firebaseService->sendToDevice(
+            $data = $firebaseService->sendToDevice(
                 'customer', 
                 $customer->fcm_token, 
                 $title, 
                 $body, 
                 $data
             );
+            return $data;
         }
     }
 }

@@ -176,14 +176,14 @@ class NotifyRidersJob implements ShouldQueue
         }
 
         // Send notification to all found riders
-        $this->sendNotificationToRiders($ride, $firebaseService);
+        $this->sendNotificationToRiders($ride);
 
         // Schedule timeout job - if no response in 30 seconds, search with increased radius
         HandleRiderTimeoutJob::dispatch($this->rideId, $this->currentRadius)
             ->delay(now()->addSeconds(30));
     }
 
-    private function sendNotificationToRiders($ride, $firebaseService)
+    private function sendNotificationToRiders($ride)
     {
         $fcmTokens = collect($this->riders)->pluck('fcm_id')->filter()->toArray();
         
@@ -193,7 +193,7 @@ class NotifyRidersJob implements ShouldQueue
 
         $customer = User::find($ride->customer_id);
         $customerName = $customer ? $customer->first_name . ' ' . $customer->last_name : 'Customer';
-        
+        $firebaseService = new FirebaseService();
         $title = 'New Ride Request Nearby';
         $body = "Pickup: {$ride->pickup_address}";
         $data = [

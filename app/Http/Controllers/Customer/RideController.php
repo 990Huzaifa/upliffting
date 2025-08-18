@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers\Customer;
 
-use App\Console\Commands\NotifyRiders;
 use App\Http\Controllers\Controller;
-use App\Jobs\NotifyNearbyRidersJob;
+use App\Jobs\SearchNearbyRidersJob;
 use App\Models\Payment;
 use App\Models\PromoCode;
 use App\Models\Rider;
@@ -186,7 +185,7 @@ class RideController extends Controller
 
             // 5: notify the nearby riders
 
-            // $data  = dispatch(new NotifyNearbyRidersJob($ride->id));
+            $data  = dispatch(new SearchNearbyRidersJob($ride->id));
             // $data = notifyNearbyRiders($ride->vehicleTypeRateId, $ride->lat, $ride->lng, 1, 10, $ride);
 
             // return $data;

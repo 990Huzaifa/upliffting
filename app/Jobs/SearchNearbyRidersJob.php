@@ -33,23 +33,23 @@ class SearchNearbyRidersJob implements ShouldQueue
         $ride = Rides::find($this->rideId);
 
         $customer = User::find($ride->customer_id);
-        if ($customer && $customer->fcm_token) {
-            $title = 'No Drivers Available';
-            $body = 'Sorry, no drivers are available in your area right now. Please try again later.';
-            $data = [
-                'rideId' => $ride->id,
-                'status' => 'no_riders_found'
-            ];
-            $firebaseService = new FirebaseService();
-            $data = $firebaseService->sendToDevice(
-                'customer', 
-                $customer->fcm_token, 
-                $title, 
-                $body, 
-                $data
-            );
-            return $data;
-        }
+        $title = 'No Drivers Available';
+        $body = 'Sorry, no drivers are available in your area right now. Please try again later.';
+        $data = [
+            'rideId' => $ride->id,
+            'status' => 'no_riders_found'
+        ];
+        $firebaseService = new FirebaseService();
+        $data = $firebaseService->sendToDevice(
+            'customer', 
+            'er_4UhmqR_2Wh5t729Ik24:APA91bFdmV4jKrlrZrEwNh4f5xmWvHu6qv4wAshvILaMOHOIEzAESArGTpI4X96YeQXngb7wcKWnka2S2qS7HxeCuw6pmSGNxH62xhMX3CZrVBx_zEAuWec', 
+            $title, 
+            $body, 
+            $data
+        );
+        return $data;
+        // if ($customer && $customer->fcm_token) {
+        // }
         
         
         // if (!$ride || $ride->status !== 'pending') {

@@ -186,22 +186,8 @@ class RideController extends Controller
             ]);
 
             // 5: notify the nearby riders
-             $title = 'No Drivers Available';
-            $body = 'Sorry, no drivers are available in your area right now. Please try again later.';
-            $data = [
-                'rideId' => $ride->id,
-                'status' => 'no_riders_found'
-            ];
-            $customer = User::find($ride->customer_id);
-            $firebaseService = new FirebaseService();
-            $data = $firebaseService->sendToDevice(
-                'customer', 
-                $customer->fcm_token, 
-                $title, 
-                $body, 
-                $data
-            );
-            // $data = SearchNearbyRidersJob::dispatch($ride->id);
+
+            $data = SearchNearbyRidersJob::dispatch($ride->id);
             // $data = notifyNearbyRiders($ride->vehicleTypeRateId, $ride->lat, $ride->lng, 1, 10, $ride);
 
             // return $data;

@@ -322,10 +322,9 @@ class ProfileController extends Controller
         try{
             $user = Auth::user();
             $rider = User::find($user->id);
-            $rider->update([
-                'lat' => $request->lat,
-                'lng' => $request->lng
-            ]);
+            $rider->lat = $request->lat;
+            $rider->lng = $request->lng;
+            $rider->save();
             return response()->json(['message' => 'Location updated successfully', "data" => $rider], 200);
         }catch(QueryException $e){
             return response()->json(['DB error' => $e->getMessage()], 500);

@@ -31,25 +31,45 @@ class SearchNearbyRidersJob implements ShouldQueue
     public function handle()
     {
         $ride = Rides::find($this->rideId);
+
+        $customer = User::find($ride->customer_id);
+        if ($customer && $customer->fcm_token) {
+            $title = 'No Drivers Available';
+            $body = 'Sorry, no drivers are available in your area right now. Please try again later.';
+            $data = [
+                'rideId' => $ride->id,
+                'status' => 'no_riders_found'
+            ];
+            $firebaseService = new FirebaseService();
+            $data = $firebaseService->sendToDevice(
+                'customer', 
+                $customer->fcm_token, 
+                $title, 
+                $body, 
+                $data
+            );
+            return $data;
+        }
         
-        if (!$ride || $ride->status !== 'pending') {
-            return; // Ride cancelled or already assigned
-        }
+        
+        // if (!$ride || $ride->status !== 'pending') {
+        //     return; // Ride cancelled or already assigned
+        // }
 
-        $firebaseService = new FirebaseService();
-        // Notify customer about search progress
-        $this->notifyCustomerSearchProgress($ride,);
+        // $firebaseService = new FirebaseService();
+        // // Notify customer about search progress
+        // $this->notifyCustomerSearchProgress($ride,);
 
-        // Search for riders in current radius
-        $riders = $this->findNearbyRiders($ride);
-        return $this->notifyCustomerNoRidersFound($ride);
-        if (!empty($riders)) {
-            // Found riders - notify them and wait for response
-            NotifyRidersJob::dispatch($this->rideId, $riders, $this->currentRadius);
-        } else {
-            // No riders found - increase radius or give up
-            $this->handleNoRidersFound($ride);
-        }
+        // // Search for riders in current radius
+        // $riders = $this->findNearbyRiders($ride);
+        // return $this->notifyCustomerNoRidersFound($ride);
+        // if (!empty($riders)) {
+        //     // Found riders - notify them and wait for response
+        //     NotifyRidersJob::dispatch($this->rideId, $riders, $this->currentRadius);
+        // } else {
+        //     // No riders found - increase radius or give up
+        //     $this->handleNoRidersFound($ride);
+        // }
     }
 
     private function findNearbyRiders($ride)

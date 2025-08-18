@@ -321,7 +321,7 @@ class ProfileController extends Controller
     {
         try{
             $user = Auth::user();
-            $rider = User::where('user_id', $user->id)->first();
+            $rider = User::find($user->id);
             $rider->update([
                 'lat' => $request->lat,
                 'lng' => $request->lng

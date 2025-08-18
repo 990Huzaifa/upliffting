@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Rider;
+use App\Models\Rides;
 use App\Services\FirebaseService;
 use Illuminate\Console\Command;
 
@@ -30,7 +31,7 @@ class NotifyRiders extends Command
      */
     public function handle()
     {
-        $ride = Rider::find($this->argument('rideId'));
+        $ride = Rides::find($this->argument('rideId'));
 
         if (!$ride) {
             $this->error('Ride request not found.');

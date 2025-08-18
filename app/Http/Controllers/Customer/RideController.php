@@ -185,12 +185,12 @@ class RideController extends Controller
 
             // 5: notify the nearby riders
 
-            SearchNearbyRidersJob::dispatch($ride->id);
+            $data = SearchNearbyRidersJob::dispatch($ride->id);
             // $data = notifyNearbyRiders($ride->vehicleTypeRateId, $ride->lat, $ride->lng, 1, 10, $ride);
 
             // return $data;
 
-            return response()->json(['message' => 'Finding ride for you.'], 201);
+            return response()->json(['message' => 'Finding ride for you.', 'data'=> $data], 201);
 
         } catch (QueryException $e) {
             return response()->json(['DB error' => $e->getMessage()], 500);

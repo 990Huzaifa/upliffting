@@ -22,12 +22,12 @@ class SearchNearbyRidersJob implements ShouldQueue
     protected $maxRadius;
     protected $firebaseService;
 
-    public function __construct($rideId, $currentRadius = 1, $maxRadius = 10)
+    public function __construct($rideId, $currentRadius = 1, $maxRadius = 10, FirebaseService $firebaseService)
     {
         $this->rideId = $rideId;
         $this->currentRadius = $currentRadius;
         $this->maxRadius = $maxRadius;
-        $this->firebaseService = app(FirebaseService::class);
+        $this->firebaseService = $firebaseService;
     }
 
     public function handle()

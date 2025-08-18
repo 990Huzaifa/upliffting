@@ -32,28 +32,13 @@ class SearchNearbyRidersJob implements ShouldQueue
     {
         $ride = Rides::find($this->rideId);
 
-        $customer = User::find($ride->customer_id);
-            $title = 'No Drivers Available';
-            $body = 'Sorry, no drivers are available in your area right now. Please try again later.';
-            $data = [
-                'rideId' => $ride->id,
-                'status' => 'no_riders_found'
-            ];
-            $data = $firebaseService->sendToDevice(
-                'customer', 
-                $customer->fcm_id, 
-                $title, 
-                $body, 
-                $data
-            );
-            return $data;
         if (!$ride || $ride->status !== 'pending') {
             return; // Ride cancelled or already assigned
         }
 
         // Notify customer about search progress
-        $this->notifyCustomerSearchProgress($ride,);
-
+        // $this->notifyCustomerSearchProgress($ride, $firebaseService);
+        return $this->notifyCustomerSearchProgress($ride, $firebaseService);
         // Search for riders in current radius
         $riders = $this->findNearbyRiders($ride);
         return $this->notifyCustomerNoRidersFound($ride);
@@ -103,7 +88,7 @@ class SearchNearbyRidersJob implements ShouldQueue
         return DB::select($query, $bindings);
     }
 
-    private function notifyCustomerSearchProgress($ride)
+    private function notifyCustomerSearchProgress($ride, $firebaseService)
     {
         $customer = User::find($ride->customer_id);
         if ($customer && $customer->fcm_id) {
@@ -115,7 +100,6 @@ class SearchNearbyRidersJob implements ShouldQueue
                 'currentRadius' => $this->currentRadius,
                 'maxRadius' => $this->maxRadius
             ];
-            $firebaseService = new FirebaseService();
             $firebaseService->sendToDevice(
                 'customer', 
                 $customer->fcm_id, 

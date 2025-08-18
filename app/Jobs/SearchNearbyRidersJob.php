@@ -28,15 +28,32 @@ class SearchNearbyRidersJob implements ShouldQueue
         $this->maxRadius = $maxRadius;
     }
 
-    public function handle()
+    public function handle(FirebaseService $firebaseService)
     {
         $ride = Rides::find($this->rideId);
+
+        $customer = User::find($ride->customer_id);
+        if ($customer && $customer->fcm_id) {
+            $title = 'No Drivers Available';
+            $body = 'Sorry, no drivers are available in your area right now. Please try again later.';
+            $data = [
+                'rideId' => $ride->id,
+                'status' => 'no_riders_found'
+            ];
+            $firebaseService = new FirebaseService();
+            $data = $firebaseService->sendToDevice(
+                'customer', 
+                $customer->fcm_id, 
+                $title, 
+                $body, 
+                $data
+            );
+        }
         
         if (!$ride || $ride->status !== 'pending') {
             return; // Ride cancelled or already assigned
         }
 
-        $firebaseService = new FirebaseService();
         // Notify customer about search progress
         $this->notifyCustomerSearchProgress($ride,);
 
@@ -145,7 +162,6 @@ class SearchNearbyRidersJob implements ShouldQueue
                 $body, 
                 $data
             );
-            return $data;
         }
     }
 }

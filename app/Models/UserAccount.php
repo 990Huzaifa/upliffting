@@ -16,5 +16,6 @@ class UserAccount extends Model
         'expiry_date',
         'type',
         'cvv',
+        'is_default',
     ];
 }

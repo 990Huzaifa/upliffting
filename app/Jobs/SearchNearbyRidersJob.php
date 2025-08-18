@@ -33,14 +33,12 @@ class SearchNearbyRidersJob implements ShouldQueue
         $ride = Rides::find($this->rideId);
 
         $customer = User::find($ride->customer_id);
-        if ($customer && $customer->fcm_id) {
             $title = 'No Drivers Available';
             $body = 'Sorry, no drivers are available in your area right now. Please try again later.';
             $data = [
                 'rideId' => $ride->id,
                 'status' => 'no_riders_found'
             ];
-            $firebaseService = new FirebaseService();
             $data = $firebaseService->sendToDevice(
                 'customer', 
                 $customer->fcm_id, 
@@ -48,8 +46,7 @@ class SearchNearbyRidersJob implements ShouldQueue
                 $body, 
                 $data
             );
-        }
-        
+            return $data;
         if (!$ride || $ride->status !== 'pending') {
             return; // Ride cancelled or already assigned
         }

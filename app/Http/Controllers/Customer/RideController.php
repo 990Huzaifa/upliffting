@@ -104,7 +104,7 @@ class RideController extends Controller
                 'drop_offs' => 'required|array',
                 'drop_offs.*' => 'required|string|max:255',
                 'vehicle_type_rate_id' => 'required|exists:vehicle_type_rates,id',
-                'payment_method_id' => 'required|exists:payment_methods,id',
+                'payment_method_id' => 'required|exists:user_accounts,id',
                 'promocode' => 'nullable|exists:promo_codes,id',
                 'distance' => 'required|numeric|min:0',
                 'duration' => 'required|numeric|min:0',

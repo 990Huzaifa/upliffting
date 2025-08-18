@@ -54,6 +54,15 @@ class PaymentMethodController extends Controller
             if ($validator->fails()) {
                 throw new Exception($validator->errors()->first(), 422);
             }
+            $default = 1;
+            // Check if the user already has a default payment method
+            $existingDefault = UserAccount::where('user_id', $user->id)
+                ->where('is_default', true)
+                ->first();
+
+            if ($existingDefault) {
+                $default = 0; // If a default exists, set the new one as not default
+            }
 
             $userAccount = UserAccount::create([
                 'user_id' => $user->id,
@@ -61,6 +70,7 @@ class PaymentMethodController extends Controller
                 'card_number' => $request->card_number,
                 'expiry_date' => $request->expiry_date,
                 'cvv' => $request->cvv,
+                'is_default' => $default,
                 'type' => $request->type,
             ]);
 

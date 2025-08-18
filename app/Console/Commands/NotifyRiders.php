@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Rider;
 use App\Models\Rides;
+use App\Models\User;
 use App\Services\FirebaseService;
 use Illuminate\Console\Command;
 
@@ -69,13 +70,18 @@ class NotifyRiders extends Command
             $this->info("No FCM tokens found for riders.");
             return;
         }
-
+        $customer = User::find($ride->customer_id)->first();
+         // Get the customer's name
+        $customerName = $customer ? $customer->first_name . ' ' . $customer->last_name : 'Customer';
          // Step 3: Prepare the notification details
         $appType = 'rider';
         $title = 'New Ride Request Nearby';
         $body = 'A new ride request is waiting for you!';
         $data = [
             'rideId' => $ride->id,
+            'rideStatus' => $ride->status,
+            'customerName' => $customerName,
+            'BaseFare' => $ride->base_fare,
             'pickupLat' => $ride->pickup_lat,
             'pickupLng' => $ride->pickup_lng,
         ];

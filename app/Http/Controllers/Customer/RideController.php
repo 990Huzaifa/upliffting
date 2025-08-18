@@ -147,7 +147,7 @@ class RideController extends Controller
                 'customer_id' => $user->id,
                 'vehicle_type_rate_id' => $request->vehicle_type_rate_id,
                 'pickup_location' => $request->pickup,
-                'status' => 'pending',
+                'status' => 'finding',
                 'promo_code_id' => $promo ? $promo->id : null,
                 'distance' => $request->distance,
                 'duration' => $request->duration / 60, // Convert seconds to minutes

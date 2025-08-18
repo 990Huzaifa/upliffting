@@ -8,6 +8,7 @@ use App\Models\PromoCode;
 use App\Models\Rider;
 use App\Models\Rides;
 use App\Models\RidesDropOff;
+use App\Models\UserAccount;
 use App\Models\VehicleTypeRate;
 use Illuminate\Support\Facades\Auth;
 use Exception;
@@ -104,7 +105,6 @@ class RideController extends Controller
                 'drop_offs' => 'required|array',
                 'drop_offs.*' => 'required|string|max:255',
                 'vehicle_type_rate_id' => 'required|exists:vehicle_type_rates,id',
-                'payment_method_id' => 'required|exists:user_accounts,id',
                 'promocode' => 'nullable|exists:promo_codes,id',
                 'distance' => 'required|numeric|min:0',
                 'duration' => 'required|numeric|min:0',
@@ -118,8 +118,6 @@ class RideController extends Controller
                 'drop_offs.*.required' => 'Each drop-off location is required.',
                 'vehicle_type_rate_id.required' => 'Vehicle type is required.',
                 'vehicle_type_rate_id.exists' => 'The selected vehicle type is invalid.',
-                'payment_method_id.required' => 'Payment method is required.',
-                'payment_method_id.exists' => 'The selected payment method is invalid.',
                 'promocode.exists' => 'The provided promo code does not exist.',
                 'distance.required' => 'Distance is required.',
                 'duration.required' => 'Duration is required.',
@@ -164,11 +162,18 @@ class RideController extends Controller
                 ]);
             }
 
+            // get active user account
+            $payment_method_id = UserAccount::where('user_id', $user->id)
+                ->where('is_default', true)
+                ->value('id');
+
+            if (!$payment_method_id)throw new Exception('No default payment method found. Please add a payment method first.', 400);
+
             // 4: add payment details
             Payment::create([
                 'ride_id' => $ride->id,
                 'customer_id' => $user->id,
-                'payment_method_id' => $request->payment_method_id,
+                'payment_method_id' => $payment_method_id,
                 'amount' => $ride->base_fare - ($ride->discount_amount ?? 0),
                 'status' => 'pending',
             ]);

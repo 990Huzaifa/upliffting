@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreign('ride_id')->references('id')->on('rides')->onUpdate('set null')->onDelete('set null');
             $table->unsignedBigInteger('customer_id');
             $table->foreign('customer_id')->references('id')->on('users')->onUpdate('set null')->onDelete('set null');
-            $table->unsignedBigInteger('rider_id');
+            $table->unsignedBigInteger('rider_id')->nullable();
             $table->foreign('rider_id')->references('id')->on('users')->onUpdate('set null')->onDelete('set null');
             $table->decimal('amount', 18, 2);
             $table->unsignedBigInteger('payment_method_id')->nullable();

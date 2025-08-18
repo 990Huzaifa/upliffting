@@ -208,7 +208,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::post('/contact', 'contactStore');            
         });
 
-        Route::apiResource('/payment-methods', CustomerPaymentMethodController::class)->only(['index', 'store']);
+
+        Route::controller(CustomerPaymentMethodController::class)->group(function () {
+            Route::get('/payment-methods', 'index');
+            Route::post('/payment-methods', 'store');
+            Route::get('/payment-methods/switch/{id}', 'switchAccount');
+        });
 
 
         Route::post('calculate-fare', [CustomerRideController::class, 'calculateFare']);

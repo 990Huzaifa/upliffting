@@ -76,32 +76,31 @@ class PaymentMethodController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function switchAccount(string $id): JsonResponse
     {
-        //
+        try{
+            $user = Auth::user();
+            $userAccount = UserAccount::where('id', $id)
+                ->where('user_id', $user->id)
+                ->firstOrFail();
+
+            if($userAccount->is_default) throw new Exception('This payment method is already set as default.', 400);
+            // first make all other payment methods not default
+            $userAccounts = UserAccount::where('user_id', $user->id)->update(['is_default' => false]);
+            // then set the selected payment method as default
+            if (!$userAccount) throw new Exception('Payment method not found.', 404);
+
+            UserAccount::where('user_id', $user->id)->update(['is_default' => false]);
+            $userAccount->update(['is_default' => true]);
+
+            return response()->json(['message' => 'Payment method updated successfully.'], 200);
+        }catch(QueryException $e){
+            return response()->json(['DB error' => $e->getMessage()], 500);
+        }catch(Exception $e){
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
 }

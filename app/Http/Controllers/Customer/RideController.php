@@ -186,7 +186,8 @@ class RideController extends Controller
 
             // 5: notify the nearby riders
 
-            $data  = dispatch(new NotifyNearbyRidersJob($ride->id));
+            // $data  = dispatch(new NotifyNearbyRidersJob($ride->id));
+            $data = notifyNearbyRiders($ride->vehicleTypeRateId, $ride->lat, $ride->lng, 1, 10, $ride);
 
             // return $data;
 

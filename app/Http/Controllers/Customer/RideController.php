@@ -183,7 +183,7 @@ class RideController extends Controller
 
             // 5: notify the nearby riders
 
-            $this->dispatch(new NotifyRiders($ride->id));
+            dispatch(new NotifyRiders($ride->id));
 
 
             return response()->json(['message' => 'Finding ride for you.'], 201);

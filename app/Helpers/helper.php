@@ -49,7 +49,7 @@ function notifyNearbyRiders($vehicle_type_id, $customerLat, $customerLng, $radiu
 
             // Raw SQL query to find nearby riders with the required conditions
             $query = "
-                SELECT users.*, riders.vehicle_type_rate_id, 
+                SELECT users.*, vehicles.vehicle_type_rate_id, 
                     (
                         6371 * acos(
                             LEAST(1.0,
@@ -67,7 +67,7 @@ function notifyNearbyRiders($vehicle_type_id, $customerLat, $customerLng, $radiu
                 WHERE users.role = 'rider'
                   AND riders.status = 'online'
                   AND vehicles.is_driving = 'active'  -- Only active vehicles
-                  AND riders.vehicle_type_rate_id = ?  -- Filter by vehicle type
+                  AND vehicles.vehicle_type_rate_id = ?  -- Filter by vehicle type
                 HAVING distance <= ?  -- Limit to riders within the radius
                 ORDER BY distance ASC
             ";

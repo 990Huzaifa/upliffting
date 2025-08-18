@@ -202,7 +202,7 @@ class AuthController extends Controller
             $vehicle = Vehicle::where('vehicle_of', $user->id)->first();
 
 
-            $user->tokens()->delete();
+            // $user->tokens()->delete();
             $token = $user->createToken('rider-token', ['rider'])->plainTextToken;
 
 

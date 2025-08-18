@@ -184,7 +184,7 @@ class AuthController extends Controller
             $is_verify = 0;
             if ($user->email_verified_at != null) {
                 $is_verify = 1;
-                $user->tokens()->delete();
+                // $user->tokens()->delete();
                 $token = $user->createToken('customer-token', ['customer'])->plainTextToken;
                 return response()->json(['token' => $token, 'is_verify' => $is_verify], 200);
             }

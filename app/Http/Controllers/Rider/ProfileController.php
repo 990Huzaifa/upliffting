@@ -326,7 +326,7 @@ class ProfileController extends Controller
                 'lat' => $request->lat,
                 'lng' => $request->lng
             ]);
-            return response()->json(['message' => 'Location updated successfully'], 200);
+            return response()->json(['message' => 'Location updated successfully', "data" => $rider], 200);
         }catch(QueryException $e){
             return response()->json(['DB error' => $e->getMessage()], 500);
         }catch(Exception $e){

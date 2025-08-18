@@ -28,7 +28,7 @@ class SearchNearbyRidersJob implements ShouldQueue
         $this->maxRadius = $maxRadius;
     }
 
-    public function handle(FirebaseService $firebaseService)
+    public function handle()
     {
         $ride = Rides::find($this->rideId);
         
@@ -36,18 +36,19 @@ class SearchNearbyRidersJob implements ShouldQueue
             return; // Ride cancelled or already assigned
         }
 
+        $firebaseService = new FirebaseService();
         // Notify customer about search progress
-        $this->notifyCustomerSearchProgress($ride, $firebaseService);
+        $this->notifyCustomerSearchProgress($ride,);
 
         // Search for riders in current radius
         $riders = $this->findNearbyRiders($ride);
         if (!empty($riders)) {
             // Found riders - notify them and wait for response
-            $this->notifyCustomerNoRidersFound($ride, $firebaseService);
+            $this->notifyCustomerNoRidersFound($ride);
             NotifyRidersJob::dispatch($this->rideId, $riders, $this->currentRadius);
         } else {
             // No riders found - increase radius or give up
-            $this->handleNoRidersFound($ride, $firebaseService);
+            $this->handleNoRidersFound($ride);
         }
     }
 
@@ -88,7 +89,7 @@ class SearchNearbyRidersJob implements ShouldQueue
         return DB::select($query, $bindings);
     }
 
-    private function notifyCustomerSearchProgress($ride, $firebaseService)
+    private function notifyCustomerSearchProgress($ride)
     {
         $customer = User::find($ride->customer_id);
         if ($customer && $customer->fcm_token) {
@@ -100,7 +101,7 @@ class SearchNearbyRidersJob implements ShouldQueue
                 'currentRadius' => $this->currentRadius,
                 'maxRadius' => $this->maxRadius
             ];
-
+            $firebaseService = new FirebaseService();
             $firebaseService->sendToDevice(
                 'customer', 
                 $customer->fcm_token, 
@@ -111,7 +112,7 @@ class SearchNearbyRidersJob implements ShouldQueue
         }
     }
 
-    private function handleNoRidersFound($ride, $firebaseService)
+    private function handleNoRidersFound($ride)
     {
         if ($this->currentRadius < $this->maxRadius) {
             // Increase radius and try again after 10 seconds
@@ -119,14 +120,14 @@ class SearchNearbyRidersJob implements ShouldQueue
                 ->delay(now()->addSeconds(10));
         } else {
             // No riders found within max radius
-            $this->notifyCustomerNoRidersFound($ride, $firebaseService);
+            $this->notifyCustomerNoRidersFound($ride);
             
             // Update ride status
             $ride->update(['status' => 'no_riders_found']);
         }
     }
 
-    private function notifyCustomerNoRidersFound($ride, $firebaseService)
+    private function notifyCustomerNoRidersFound($ride)
     {
         $customer = User::find($ride->customer_id);
         if ($customer && $customer->fcm_token) {
@@ -136,7 +137,7 @@ class SearchNearbyRidersJob implements ShouldQueue
                 'rideId' => $ride->id,
                 'status' => 'no_riders_found'
             ];
-
+            $firebaseService = new FirebaseService();
             $firebaseService->sendToDevice(
                 'customer', 
                 $customer->fcm_token, 

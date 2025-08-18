@@ -169,7 +169,7 @@ class RideController extends Controller
                 ->value('id');
 
             if (!$payment_method_id){
-                return response()->json(['message' => 'No default payment method found. Please add a payment method first.', 'add_card' => 1], 200);
+                return response()->json(['message' => 'No default payment method found. Please add a payment method first.', 'add_card' => 0], 200);
             }
 
             // 4: add payment details

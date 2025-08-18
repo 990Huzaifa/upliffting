@@ -13,6 +13,8 @@ class Rides extends Model
         'customer_id',
         'vehicle_type_rate_id',
         'pickup_location',
+        "pickup_lat",
+        "pickup_lng",
         'status',
         'dropoff_location',
         'base_fare',

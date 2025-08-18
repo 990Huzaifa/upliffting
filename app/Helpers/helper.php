@@ -39,7 +39,7 @@ function getNearbyRiders(float $customerLat, float $customerLng, float $radiusKm
     return DB::select($query, $bindings);
 }
 
-function notifyNearbyRiders($vehicle_type_id, float $customerLat, float $customerLng, float $radiusKm, $maxRadius, $ride)
+function notifyNearbyRiders($vehicle_type_id, $customerLat, $customerLng, $radiusKm, $maxRadius, $ride)
 {
    // Start with the initial radius
         $currentRadius = $radiusKm;

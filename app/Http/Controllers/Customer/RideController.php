@@ -9,8 +9,10 @@ use App\Models\PromoCode;
 use App\Models\Rider;
 use App\Models\Rides;
 use App\Models\RidesDropOff;
+use App\Models\User;
 use App\Models\UserAccount;
 use App\Models\VehicleTypeRate;
+use App\Services\FirebaseService;
 use Illuminate\Support\Facades\Auth;
 use Exception;
 use Illuminate\Database\QueryException;
@@ -184,8 +186,22 @@ class RideController extends Controller
             ]);
 
             // 5: notify the nearby riders
-
-            $data = SearchNearbyRidersJob::dispatch($ride->id);
+             $title = 'No Drivers Available';
+            $body = 'Sorry, no drivers are available in your area right now. Please try again later.';
+            $data = [
+                'rideId' => $ride->id,
+                'status' => 'no_riders_found'
+            ];
+            $customer = User::find($ride->customer_id);
+            $firebaseService = new FirebaseService();
+            $data = $firebaseService->sendToDevice(
+                'customer', 
+                $customer->fcm_token, 
+                $title, 
+                $body, 
+                $data
+            );
+            // $data = SearchNearbyRidersJob::dispatch($ride->id);
             // $data = notifyNearbyRiders($ride->vehicleTypeRateId, $ride->lat, $ride->lng, 1, 10, $ride);
 
             // return $data;

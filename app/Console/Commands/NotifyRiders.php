@@ -71,7 +71,7 @@ class NotifyRiders extends Command
         }
 
          // Step 3: Prepare the notification details
-        $appType = 'rider'; // Specify your app type (e.g., 'android', 'ios')
+        $appType = 'rider';
         $title = 'New Ride Request Nearby';
         $body = 'A new ride request is waiting for you!';
         $data = [

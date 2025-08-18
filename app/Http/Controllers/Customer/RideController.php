@@ -168,7 +168,9 @@ class RideController extends Controller
                 ->where('is_default', true)
                 ->value('id');
 
-            if (!$payment_method_id)throw new Exception('No default payment method found. Please add a payment method first.', 400);
+            if (!$payment_method_id){
+                return response()->json(['message' => 'No default payment method found. Please add a payment method first.', 'add_card' => 1], 200);
+            }
 
             // 4: add payment details
             Payment::create([

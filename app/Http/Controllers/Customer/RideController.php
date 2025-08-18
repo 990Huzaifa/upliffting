@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Customer;
 
 use App\Console\Commands\NotifyRiders;
 use App\Http\Controllers\Controller;
+use App\Jobs\NotifyNearbyRidersJob;
 use App\Models\Payment;
 use App\Models\PromoCode;
 use App\Models\Rider;
@@ -183,7 +184,7 @@ class RideController extends Controller
 
             // 5: notify the nearby riders
 
-            dispatch(new NotifyRiders($ride->id));
+            dispatch(new NotifyNearbyRidersJob($ride->id));
 
 
             return response()->json(['message' => 'Finding ride for you.'], 201);

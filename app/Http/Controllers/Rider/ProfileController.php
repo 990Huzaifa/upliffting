@@ -322,13 +322,17 @@ class ProfileController extends Controller
         try{
             $user = Auth::user();
             $rider = User::find($user->id);
+            DB::beginTransaction();
             $rider->lat = $request->lat;
             $rider->lng = $request->lng;
             $rider->save();
+            DB::commit();
             return response()->json(['message' => 'Location updated successfully', "data" => $rider], 200);
         }catch(QueryException $e){
+            DB::rollBack();
             return response()->json(['DB error' => $e->getMessage()], 500);
         }catch(Exception $e){
+            DB::rollBack();
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }

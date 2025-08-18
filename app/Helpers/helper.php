@@ -63,7 +63,7 @@ function notifyNearbyRiders($vehicle_type_id, $customerLat, $customerLng, $radiu
                     ) AS distance 
                 FROM users
                 INNER JOIN riders ON riders.user_id = users.id
-                INNER JOIN vehicles ON vehicles.user_id = users.id  -- Join with vehicles table to check is_driving
+                INNER JOIN vehicles ON vehicles.vehicle_of = users.id  -- Join with vehicles table to check is_driving
                 WHERE users.role = 'rider'
                   AND riders.status = 'online'
                   AND vehicles.is_driving = 'active'  -- Only active vehicles

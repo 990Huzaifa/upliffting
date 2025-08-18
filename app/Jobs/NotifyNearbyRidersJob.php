@@ -38,7 +38,7 @@ class NotifyNearbyRidersJob implements ShouldQueue
 
         // Aapka existing logic yahan paste karein
         $result = notifyNearbyRiders($vehicleTypeRateId, $lat, $lng, $radius, $maxRadius, $ride);
-        return $result;
+        // return $result;
         if (is_array($result)) {
             $riders = $result['riders'];
             $ride = $result['ride'];

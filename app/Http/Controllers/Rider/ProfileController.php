@@ -320,7 +320,8 @@ class ProfileController extends Controller
     public function updateLatLong(Request $request): JsonResponse
     {
         try{
-            $rider = Auth::user();
+            $user = Auth::user();
+            $rider = User::where('user_id', $user->id)->first();
             $rider->update([
                 'lat' => $request->lat,
                 'lng' => $request->lng

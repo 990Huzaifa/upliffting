@@ -77,7 +77,7 @@ function notifyNearbyRiders($vehicle_type_id, $customerLat, $customerLng, $radiu
 
             // Execute the query to fetch nearby riders
             $riders = DB::select($query, $bindings);
-            return $riders;
+            // return $riders;
             // If riders are found, return them along with the ride
             if (!empty($riders)) {
                 return ['riders' => $riders, 'ride' => $ride];  

@@ -190,7 +190,7 @@ class NotifyRidersJob implements ShouldQueue, ShouldBeUnique
     }
 
 
-    public function __construct($rideId, $riders, $currentRadius, $maxRadius = 10)
+    public function __construct($rideId, $riders, $currentRadius, $maxRadius)
     {
         $this->rideId = $rideId;
         $this->riders = $riders;
@@ -214,7 +214,7 @@ class NotifyRidersJob implements ShouldQueue, ShouldBeUnique
         $this->sendNotificationToRiders($ride, $firebaseService);
 
         // Schedule timeout job - if no response in 30 seconds, search with increased radius
-        HandleRiderTimeoutJob::dispatch($this->rideId, $this->currentRadius)
+        HandleRiderTimeoutJob::dispatch($this->rideId, $this->currentRadius, $this->maxRadius)
             ->delay(now()->addSeconds(30));
     }
 

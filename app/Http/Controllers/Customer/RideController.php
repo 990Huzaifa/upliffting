@@ -98,7 +98,7 @@ class RideController extends Controller
     }
 
 
-    public function store(Request $request): JsonResponse
+    public function store(Request $request)
     {
         try {
             // Validate input
@@ -188,9 +188,7 @@ class RideController extends Controller
             // 5: notify the nearby riders
 
             $data = SearchNearbyRidersJob::dispatch($ride->id);
-            // $data = notifyNearbyRiders($ride->vehicleTypeRateId, $ride->lat, $ride->lng, 1, 10, $ride);
 
-            // return $data;
 
             return response()->json(['message' => 'Finding ride for you.', 'data'=> $data], 201);
 

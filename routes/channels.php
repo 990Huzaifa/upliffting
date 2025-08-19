@@ -13,10 +13,15 @@ use Illuminate\Support\Facades\Broadcast;
 |
 */
 
-// Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
-//     return (int) $user->id === (int) $id;
-// });
+Broadcast::channel('customer.{customerId}', function ($user, $customerId) {
+    return (int)$user->id === (int)$customerId;
+});
 
-Broadcast::channel('nearbyriders.{id}', function ($user, $id) {
-    return $user->id == $id;
+Broadcast::channel('rider.{riderId}', function ($user, $riderId) {
+    return (int)$user->id === (int)$riderId;
+});
+
+Broadcast::channel('ride.{rideId}', function ($user, $rideId) {
+    // allow rider or customer of this ride; implement your check here
+    return true;
 });

@@ -7,19 +7,29 @@ use App\Models\Rides;
 use App\Models\User;
 use App\Services\FirebaseService;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
-class SearchNearbyRidersJob implements ShouldQueue
+class SearchNearbyRidersJob implements ShouldQueue, ShouldBeUnique
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $rideId;
     protected $currentRadius;
     protected $maxRadius;
+    public int $uniqueFor = 20; // 10s delay + buffer
+
+    public function uniqueId(): string
+    {
+        return "ride:{$this->rideId}:r{$this->currentRadius}";
+    }
+
 
     public function __construct($rideId, $currentRadius = 1, $maxRadius = 10)
     {
@@ -36,10 +46,10 @@ class SearchNearbyRidersJob implements ShouldQueue
             return "cancelled"; // Ride cancelled or already assigned
         }
 
-        // Notify customer about search progress
+        // 1) Progress notify (throttled per radius)
         $this->notifyCustomerSearchProgress($ride, $firebaseService);
 
-        // Search for riders in current radius
+        // 2) Find riders in current radius
         $riders = $this->findNearbyRiders($ride);
 
         if (!empty($riders) && $this->currentRadius < $this->maxRadius) {
@@ -47,10 +57,15 @@ class SearchNearbyRidersJob implements ShouldQueue
             $ride->update(['status' => 'pending']);
 
             NotifyRidersJob::dispatch($this->rideId, $riders, $this->currentRadius);
-        } else {
-            // No riders found - increase radius or give up
-            $this->handleNoRidersFound($ride, $firebaseService);
+
+            Log::debug('SearchNearbyRidersJob: riders found', [
+                'rideId' => $this->rideId,
+                'radius' => $this->currentRadius,
+                'count' => count($riders),
+            ]);
+            return;            
         }
+        $this->handleNoRidersFound($ride, $firebaseService);
     }
 
     private function findNearbyRiders($ride)
@@ -91,7 +106,12 @@ class SearchNearbyRidersJob implements ShouldQueue
     }
 
     private function notifyCustomerSearchProgress($ride, $firebaseService)
-    {
+    {   
+        // throttle: one progress ping per ride+radius (12s TTL)
+        $key = "ride_progress:{$ride->id}:r{$this->currentRadius}";
+        if (!Cache::add($key, 1, now()->addSeconds(12))) {
+            return;
+        }
 
         $customer = User::find($ride->customer_id);
         if ($customer && $customer->fcm_id) {
@@ -113,22 +133,25 @@ class SearchNearbyRidersJob implements ShouldQueue
         }
     }
 
-    private function handleNoRidersFound($ride, $firebaseService)
+    private function handleNoRidersFound($ride, FirebaseService $firebaseService)
     {
         if ($this->currentRadius < $this->maxRadius) {
             // Increase radius and try again after 10 seconds
             SearchNearbyRidersJob::dispatch($this->rideId, $this->currentRadius + 1, $this->maxRadius)
                 ->delay(now()->addSeconds(10));
-        } else {
-            // No riders found within max radius
-            $this->notifyCustomerNoRidersFound($ride, $firebaseService);
 
-            // Update ride status
-            $ride->update(['status' => 'cancelled']);
+            Log::debug('SearchNearbyRidersJob: expanding radius', [
+                'rideId' => $this->rideId,
+                'nextRadius' => $this->currentRadius + 1,
+            ]);
+            return;
         }
+        $this->notifyCustomerNoRidersFound($ride, $firebaseService);
+        $ride->update(['status' => 'cancelled']);
+        Log::debug('SearchNearbyRidersJob: cancelled (max radius)', ['rideId' => $this->rideId]);
     }
 
-    private function notifyCustomerNoRidersFound($ride, $firebaseService)
+    private function notifyCustomerNoRidersFound($ride, FirebaseService $firebaseService)
     {
         $customer = User::find($ride->customer_id);
         if ($customer && $customer->fcm_id) {
@@ -150,20 +173,29 @@ class SearchNearbyRidersJob implements ShouldQueue
 }
 
 // 2. Notify Riders Job - NotifyRidersJob.php
-class NotifyRidersJob implements ShouldQueue
+class NotifyRidersJob implements ShouldQueue, ShouldBeUnique
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $rideId;
     protected $riders;
     protected $currentRadius;
+    protected $maxRadius;
+
+    public int $uniqueFor = 40; // 30s timeout + buffer
+
+    public function uniqueId(): string
+    {
+        return "notify:ride:{$this->rideId}:r{$this->currentRadius}";
+    }
 
 
-    public function __construct($rideId, $riders, $currentRadius)
+    public function __construct($rideId, $riders, $currentRadius, $maxRadius)
     {
         $this->rideId = $rideId;
         $this->riders = $riders;
         $this->currentRadius = $currentRadius;
+        $this->maxRadius = $maxRadius;
     }
 
     public function handle(FirebaseService $firebaseService)
@@ -171,18 +203,22 @@ class NotifyRidersJob implements ShouldQueue
         $ride = Rides::find($this->rideId);
 
         if (!$ride || !in_array($ride->status, ['finding', 'pending'])) {
+             Log::debug('NotifyRidersJob: ride not acceptable', [
+                'rideId' => $this->rideId,
+                'status' => optional($ride)->status,
+            ]);
             return;
         }
 
         // Send notification to all found riders
-        $this->sendNotificationToRiders($ride);
+        $this->sendNotificationToRiders($ride, $firebaseService);
 
         // Schedule timeout job - if no response in 30 seconds, search with increased radius
         HandleRiderTimeoutJob::dispatch($this->rideId, $this->currentRadius)
             ->delay(now()->addSeconds(30));
     }
 
-    private function sendNotificationToRiders($ride)
+    private function sendNotificationToRiders($ride, FirebaseService $firebaseService)
     {
         $fcmTokens = collect($this->riders)->pluck('fcm_id')->filter()->toArray();
 
@@ -192,7 +228,6 @@ class NotifyRidersJob implements ShouldQueue
 
         $customer = User::find($ride->customer_id);
         $customerName = $customer ? $customer->first_name . ' ' . $customer->last_name : 'Customer';
-        $firebaseService = new FirebaseService();
         $title = 'New Ride Request Nearby';
         $body = "Pickup: {$ride->pickup_address}";
         $data = [
@@ -210,25 +245,38 @@ class NotifyRidersJob implements ShouldQueue
         ];
 
         $firebaseService->sendToMultipleDevices('rider', $fcmTokens, $title, $body, $data);
+        Log::debug('NotifyRidersJob: notified riders', [
+            'rideId' => $this->rideId,
+            'radius' => $this->currentRadius,
+            'tokens' => count($fcmTokens),
+        ]);
     }
 }
 
 
 // 3. Handle Rider Timeout Job - HandleRiderTimeoutJob.php
-class HandleRiderTimeoutJob implements ShouldQueue
+class HandleRiderTimeoutJob implements ShouldQueue, ShouldBeUnique
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $rideId;
     protected $currentRadius;
+    protected $maxRadius;
+    public int $uniqueFor = 40;
 
-    public function __construct($rideId, $currentRadius)
+    public function uniqueId(): string
+    {
+        return "timeout:ride:{$this->rideId}:r{$this->currentRadius}";
+    }
+
+    public function __construct($rideId, $currentRadius, $maxRadius)
     {
         $this->rideId = $rideId;
         $this->currentRadius = $currentRadius;
+        $this->maxRadius = $maxRadius;
     }
 
-    public function handle()
+    public function handle(FirebaseService $firebaseService)
     {
         $ride = Rides::find($this->rideId);
 
@@ -237,12 +285,44 @@ class HandleRiderTimeoutJob implements ShouldQueue
             return;
         }
 
-        // Timeout ho gaya hai, ab dobara search karo with increased radius
-        // Ride status ko wapas 'finding' kar do taake search continue ho sake
-        $ride->update(['status' => 'finding']);
+        // No accept within 30s:
+        if ($this->currentRadius < $this->maxRadius) {
+            $ride->update(['status' => 'finding']);
 
-        // Continue searching with increased radius
-        SearchNearbyRidersJob::dispatch($this->rideId, $this->currentRadius + 1);
+            // Next search step (immediate; we already waited 30s)
+            SearchNearbyRidersJob::dispatch(
+                $this->rideId,
+                $this->currentRadius + 1,
+                $this->maxRadius
+            );
+
+            Log::debug('HandleRiderTimeoutJob: radius increased', [
+                'rideId' => $this->rideId,
+                'nextRadius' => $this->currentRadius + 1,
+            ]);
+        }else {
+            // Max reached → cancel & notify customer
+            $ride->update(['status' => 'cancelled']);
+
+            $customer = User::find($ride->customer_id);
+            if ($customer && $customer->fcm_id) {
+                $firebaseService->sendToDevice(
+                    'customer',
+                    $customer->fcm_id,
+                    'No Drivers Available',
+                    'Sorry, no drivers accepted your ride. Please try again.',
+                    [
+                        'rideId' => $ride->id,
+                        'status' => 'cancelled',
+                    ]
+                );
+            }
+
+            Log::debug('HandleRiderTimeoutJob: cancelled at max radius', [
+                'rideId' => $this->rideId,
+                'radius' => $this->currentRadius,
+            ]);
+        }
     }
 }
 

@@ -190,7 +190,7 @@ class NotifyRidersJob implements ShouldQueue, ShouldBeUnique
     }
 
 
-    public function __construct($rideId, $riders, $currentRadius, $maxRadius)
+    public function __construct($rideId, $riders, $currentRadius, $maxRadius = 10)
     {
         $this->rideId = $rideId;
         $this->riders = $riders;

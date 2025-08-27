@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('rides', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('customer_id');
-            $table->foreign('customer_id')->references('id')->on('users')->onUpdate('set null')->onDelete('set null');
+            $table->foreign('customer_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
             $table->unsignedBigInteger('rider_id')->nullable();
             $table->foreign('rider_id')->references('id')->on('users')->onUpdate('set null')->onDelete('set null');
             $table->unsignedBigInteger('vehicle_id')->nullable();

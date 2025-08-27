@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('ride_id');
-            $table->foreign('ride_id')->references('id')->on('rides')->onUpdate('set null')->onDelete('set null');
+            $table->foreign('ride_id')->references('id')->on('rides')->onUpdate('cascade')->onDelete('cascade');
             $table->unsignedBigInteger('customer_id');
-            $table->foreign('customer_id')->references('id')->on('users')->onUpdate('set null')->onDelete('set null');
+            $table->foreign('customer_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
             $table->unsignedBigInteger('rider_id')->nullable();
             $table->foreign('rider_id')->references('id')->on('users')->onUpdate('set null')->onDelete('set null');
             $table->decimal('amount', 18, 2);

@@ -22,6 +22,8 @@ use App\Http\Controllers\Rider\ProfileController as RiderProfileController;
 use App\Http\Controllers\Customer\ProfileController as CustomerProfileController;
 use App\Http\Controllers\Customer\AuthController as CustomerAuth;
 
+use Illuminate\Support\Facades\Broadcast;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -60,6 +62,7 @@ Route::prefix('admin')->group(function () {
     Route::post('signin', [AdminAuth::class, 'signin'])->name('admin.signin');
 });
 
+Broadcast::routes(['middleware' => ['auth:api']]);
 
 Route::middleware(['auth:sanctum'])->group(function () {
 

@@ -189,7 +189,7 @@ class AuthController extends Controller
                 return response()->json(['token' => $token, 'is_verify' => $is_verify], 200);
             }
 
-            return response()->json(['is_verify' => $is_verify], 400);
+            return response()->json(['is_verify' => $is_verify], 200);
 
 
         }catch(QueryException $e){

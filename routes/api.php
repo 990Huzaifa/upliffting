@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\VehicleTypeRateController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\Customer\PaymentMethodController as CustomerPaymentMethodController;
 use App\Http\Controllers\Customer\RideController as CustomerRideController;
+use App\Http\Controllers\Rider\RideController as RiderRideController;
 use App\Http\Controllers\Rider\VehicleController as RiderVehicleController;
 use App\Http\Controllers\Rider\VehicleInspectionController;
 use Illuminate\Http\Request;
@@ -182,6 +183,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('vehicle-type', [VehicleTypeRateController::class, 'list1']);
         Route::apiResource('/vehicle', RiderVehicleController::class)->only('index', 'store', 'update', 'destroy');
         Route::post('upload-vehicle-inspection', [VehicleInspectionController::class, 'storeOrUpdate']);
+
+
+        // ride
+        Route::post('accept-ride', [RiderRideController::class, 'acceptRide']);
 
         
         

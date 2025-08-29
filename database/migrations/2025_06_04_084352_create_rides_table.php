@@ -24,6 +24,8 @@ return new class extends Migration
             $table->unsignedBigInteger('vehicle_type_rate_id')->nullable();
             $table->foreign('vehicle_type_rate_id')->references('id')->on('vehicle_type_rates')->onUpdate('set null')->onDelete('set null');
             $table->longText('pickup_location');
+            $table->longText('pickup_lat');
+            $table->longText('pickup_lng');
             $table->decimal('distance', 8, 2)->nullable();
             $table->bigInteger('duration')->nullable();  
             $table->decimal('base_fare', 8, 2);

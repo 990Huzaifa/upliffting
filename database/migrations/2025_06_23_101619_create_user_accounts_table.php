@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('expiry_date');
             $table->string('cvv');
             $table->enum('type',['debit','credit'])->default('debit'); // Added type field to store card type (e.g., Visa, MasterCard)
+            $table->boolean('is_default')->default(false);
             $table->timestamps();
         });
     }

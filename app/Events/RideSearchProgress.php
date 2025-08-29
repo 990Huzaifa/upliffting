@@ -14,13 +14,17 @@ class RideSearchProgress
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-     public $rideId;
+    public $title;
+    public $rideId;
+    public $customerId;
     public $currentRadius;
     public $maxRadius;
 
-    public function __construct($rideId, $currentRadius, $maxRadius)
+    public function __construct($title, $rideId, $customerId, $currentRadius, $maxRadius)
     {
+        $this->title = $title;
         $this->rideId = $rideId;
+        $this->customerId = $customerId;
         $this->currentRadius = $currentRadius;
         $this->maxRadius = $maxRadius;
     }
@@ -33,22 +37,22 @@ class RideSearchProgress
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('ride.'.$this->rideId),
+            new PrivateChannel('customer.'.$this->customerId),
         ];
     }
 
     public function broadcastAs()
     {
-        return 'ride.progress'; // Socket event name
+        return 'RideSearchProgress'; // Socket event name
     }
 
     public function broadcastWith()
     {
         return [
+            'title' => $this->title,
             'rideId' => $this->rideId,
             'currentRadius' => $this->currentRadius,
             'maxRadius' => $this->maxRadius,
-            'status' => 'searching',
         ];
     }
 }

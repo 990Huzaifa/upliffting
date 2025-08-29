@@ -119,7 +119,7 @@ class SearchNearbyRidersJob implements ShouldQueue, ShouldBeUnique
             $title = 'Searching for Driver';
             
             // Fire the event for customer channel
-            event(new RideSearchProgress(
+            broadcast(new RideSearchProgress(
                 $title,
                 $ride->id,
                 $customer->id, // <- customerId add in constructor

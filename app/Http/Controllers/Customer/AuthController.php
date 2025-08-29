@@ -186,7 +186,7 @@ class AuthController extends Controller
                 $is_verify = 1;
                 // $user->tokens()->delete();
                 $token = $user->createToken('customer-token', ['customer'])->plainTextToken;
-                return response()->json(['token' => $token, 'is_verify' => $is_verify], 200);
+                return response()->json(['token' => $token, 'is_verify' => $is_verify, 'user' => $user], 200);
             }
 
             return response()->json(['is_verify' => $is_verify], 200);

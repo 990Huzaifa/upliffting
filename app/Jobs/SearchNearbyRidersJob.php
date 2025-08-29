@@ -32,7 +32,7 @@ class SearchNearbyRidersJob implements ShouldQueue, ShouldBeUnique
     }
 
 
-    public function __construct($rideId, $currentRadius = 1, $maxRadius = 10)
+    public function __construct($rideId, $currentRadius = 1, $maxRadius = 5)
     {
         $this->rideId = $rideId;
         $this->currentRadius = $currentRadius;

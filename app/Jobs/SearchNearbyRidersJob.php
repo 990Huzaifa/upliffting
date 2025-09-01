@@ -128,7 +128,8 @@ class SearchNearbyRidersJob implements ShouldQueue, ShouldBeUnique
                 $ride->id,
                 $customer->id, // <- customerId add in constructor
                 $this->currentRadius,
-                $this->maxRadius
+                $this->maxRadius,
+                'searching'
             ));
 
         }
@@ -163,7 +164,8 @@ class SearchNearbyRidersJob implements ShouldQueue, ShouldBeUnique
                 $ride->id,
                 $customer->id, // <- customerId add in constructor
                 $this->currentRadius,
-                $this->maxRadius
+                $this->maxRadius,
+                'expired'
             ));
         }
     }
@@ -316,7 +318,8 @@ class HandleRiderTimeoutJob implements ShouldQueue, ShouldBeUnique
                     $ride->id,
                     $customer->id, // <- customerId add in constructor
                     $this->currentRadius,
-                    $this->maxRadius
+                    $this->maxRadius,
+                    'expired'
                 ));
             }
 

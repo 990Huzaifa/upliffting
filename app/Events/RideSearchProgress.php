@@ -19,14 +19,16 @@ class RideSearchProgress implements ShouldBroadcast
     public $customerId;
     public $currentRadius;
     public $maxRadius;
+    public $rideStatus;
 
-    public function __construct($title, $rideId, $customerId, $currentRadius, $maxRadius)
+    public function __construct($title, $rideId, $customerId, $currentRadius, $maxRadius, $rideStatus)
     {
         $this->title = $title;
         $this->rideId = $rideId;
         $this->customerId = $customerId;
         $this->currentRadius = $currentRadius;
         $this->maxRadius = $maxRadius;
+        $this->rideStatus = $rideStatus;
     }
 
     /**
@@ -53,6 +55,7 @@ class RideSearchProgress implements ShouldBroadcast
             'rideId' => $this->rideId,
             'currentRadius' => $this->currentRadius,
             'maxRadius' => $this->maxRadius,
+            'rideStatus' => $this->rideStatus,
         ];
     }
 }

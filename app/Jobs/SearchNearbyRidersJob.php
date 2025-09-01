@@ -45,7 +45,11 @@ class SearchNearbyRidersJob implements ShouldQueue, ShouldBeUnique
     {
         $ride = Rides::find($this->rideId);
 
-        if (!$ride || $ride->status !== 'finding') {
+        if (!$ride || $ride->status !== 'finding' || $ride->status === 'cancelled') {
+             Log::debug('SearchNearbyRidersJob: ride not acceptable', [
+                'rideId' => $this->rideId,
+                'status' => optional($ride)->status,
+            ]);
             return "cancelled"; // Ride cancelled or already assigned
         }
 

@@ -221,7 +221,7 @@ class RideController extends Controller
 
             $ride->update([
                 'status' => 'cancelled',
-                'reason' => $request->reason,
+                'reason' => $request->reason ?? null,
             ]);
 
             return response()->json(['message' => 'Ride cancelled successfully.'], 200);

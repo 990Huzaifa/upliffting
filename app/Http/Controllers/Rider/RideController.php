@@ -15,6 +15,7 @@ class RideController extends Controller
     {
         try{
             $user = Auth::user();
+            
 
             return response()->json(['message' => 'Ride accepted successfully'], 200);
         } catch (QueryException $e) {

@@ -34,7 +34,7 @@ class SearchNearbyRidersJob implements ShouldQueue, ShouldBeUnique
     }
 
 
-    public function __construct($rideId, $currentRadius = 1, $maxRadius = 5)
+    public function __construct($rideId, $currentRadius = 1, $maxRadius = 6)
     {
         $this->rideId = $rideId;
         $this->currentRadius = $currentRadius;
@@ -50,7 +50,9 @@ class SearchNearbyRidersJob implements ShouldQueue, ShouldBeUnique
         }
 
         // 1) Progress notify (throttled per radius)
-        $this->notifyCustomerSearchProgress($ride);
+        if ($this->currentRadius < $this->maxRadius) {
+            $this->notifyCustomerSearchProgress($ride);
+        }
 
         // 2) Find riders in current radius
         $riders = $this->findNearbyRiders($ride);

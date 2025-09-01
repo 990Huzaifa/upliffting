@@ -65,7 +65,7 @@ class SearchNearbyRidersJob implements ShouldQueue, ShouldBeUnique
             // Found riders - notify them and wait for response
             $ride->update(['status' => 'pending']);
 
-            // NotifyRidersJob::dispatch($this->rideId, $riders, $this->currentRadius, $this->maxRadius);
+            NotifyRidersJob::dispatch($this->rideId, $riders, $this->currentRadius, $this->maxRadius);
 
             Log::debug('SearchNearbyRidersJob: riders found', [
                 'rideId' => $this->rideId,

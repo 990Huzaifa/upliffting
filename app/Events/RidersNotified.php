@@ -14,13 +14,17 @@ class RidersNotified
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-     public $rideId;
+    public $title;
+    public $rideId;
     public $riderIds; // array of user ids (riders)
+    public $data; // extra ride info to send
 
-    public function __construct($rideId, array $riderIds)
+    public function __construct($title, $rideId, array $riderIds, array $data = [])
     {
+        $this->title = $title;
         $this->rideId = (int)$rideId;
         $this->riderIds = $riderIds;
+        $this->data = $data;
     }
 
     public function broadcastOn()
@@ -33,13 +37,17 @@ class RidersNotified
         return $channels;
     }
 
-    public function broadcastAs() { return 'ride.request'; }
+    public function broadcastAs() 
+    { 
+        return 'RideRequests';  // Socket event name
+    }
 
     public function broadcastWith()
     {
-        return [
+        return array_merge([
+            'title' => $this->title,
             'rideId' => $this->rideId,
             'timeout' => 30,
-        ];
+        ], $this->data); // extra data added here
     }
 }

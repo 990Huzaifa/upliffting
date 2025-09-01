@@ -10,15 +10,17 @@ class RideAccepted implements ShouldBroadcast
 {
     use SerializesModels;
 
+    public $title;
     public $rideId;
-    public $riderId;
     public $rider; // minimal rider info array
+    public $data; // extra ride info to send
 
-    public function __construct($rideId, $riderId, array $rider)
+    public function __construct($title, $rideId, array $rider, array $data = [])
     {
+        $this->title = $title;
         $this->rideId = $rideId;
-        $this->riderId = $riderId;
         $this->rider = $rider;
+        $this->data = $data;
     }
 
     public function broadcastOn()
@@ -30,11 +32,13 @@ class RideAccepted implements ShouldBroadcast
 
     public function broadcastWith()
     {
-        return [
+
+
+        return array_merge([
+            'title' => $this->title,
             'rideId' => $this->rideId,
-            'riderId' => $this->riderId,
             'rider' => $this->rider,
             'status' => 'accepted',
-        ];
+        ], $this->data); // extra data added here
     }
 }

@@ -62,10 +62,9 @@ class SearchNearbyRidersJob implements ShouldQueue, ShouldBeUnique
         $riders = $this->findNearbyRiders($ride);
 
         if (!empty($riders) && $this->currentRadius < $this->maxRadius) {
-            // Found riders - notify them and wait for response
-            $ride->update(['status' => 'finding']);
 
-            //NotifyRidersJob::dispatch($this->rideId, $riders, $this->currentRadius, $this->maxRadius);
+
+            NotifyRidersJob::dispatch($this->rideId, $riders, $this->currentRadius, $this->maxRadius);
 
             Log::debug('SearchNearbyRidersJob: riders found', [
                 'rideId' => $this->rideId,
@@ -218,7 +217,7 @@ class NotifyRidersJob implements ShouldQueue, ShouldBeUnique
 
         // Schedule timeout job - if no response in 30 seconds, search with increased radius
         HandleRiderTimeoutJob::dispatch($this->rideId, $this->currentRadius, $this->maxRadius)
-            ->delay(now()->addSeconds(30));
+            ->delay(now()->addSeconds(10));
     }
 
     private function sendNotificationToRiders($ride)
@@ -261,7 +260,6 @@ class NotifyRidersJob implements ShouldQueue, ShouldBeUnique
     }
 }
 
-
 // 3. Handle Rider Timeout Job - HandleRiderTimeoutJob.php
 class HandleRiderTimeoutJob implements ShouldQueue, ShouldBeUnique
 {
@@ -289,13 +287,13 @@ class HandleRiderTimeoutJob implements ShouldQueue, ShouldBeUnique
         $ride = Rides::find($this->rideId);
 
         // Agar ride already accepted ho gai hai ya cancelled hai to kuch nahi karna
-        if (!$ride || !in_array($ride->status, ['pending'])) {
-            return;
-        }
+        // if (!$ride || !in_array($ride->status, ['pending'])) {
+        //     return;
+        // }
 
         // No accept within 30s:
         if ($this->currentRadius < $this->maxRadius) {
-            $ride->update(['status' => 'finding']);
+            // $ride->update(['status' => 'finding']);
 
             // Next search step (immediate; we already waited 30s)
             SearchNearbyRidersJob::dispatch(

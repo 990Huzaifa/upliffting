@@ -37,7 +37,7 @@ class HandleRiderResponseJob implements ShouldQueue
             return;
         }
 
-        if ($this->response === 'accept') {
+        if ($this->response == 'accept') {
             $this->handleAcceptance($ride);
         }
     }
@@ -50,6 +50,11 @@ class HandleRiderResponseJob implements ShouldQueue
             'status' => 'on a way'
         ]);
 
+        Log::debug('HandleRiderResponseJob: yaha tk working', [
+            'rideId' => $ride->id,
+            'customer_id' => $ride->customer_id,
+        ]);
+        
         // Notify customer about acceptance
         $this->notifyCustomerRideAccepted($ride);
     }

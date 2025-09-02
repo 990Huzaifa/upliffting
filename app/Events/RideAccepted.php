@@ -38,13 +38,11 @@ class RideAccepted implements ShouldBroadcast
 
     public function broadcastWith()
     {
-
-
         return array_merge([
             'title' => $this->title,
             'rideId' => $this->rideId,
             'rider' => $this->rider,
-            'status' => 'accepted',
+            'status' => 'on a way',
         ], $this->data); // extra data added here
     }
 }

@@ -15,14 +15,12 @@ class RideAccepted implements ShouldBroadcast
 
     public $title;
     public $rideId;
-    public $rider; // minimal rider info array
     public $data; // extra ride info to send
 
-    public function __construct($title, $rideId, array $rider, array $data = [])
+    public function __construct($title, $rideId, array $data = [])
     {
         $this->title = $title;
         $this->rideId = $rideId;
-        $this->rider = $rider;
         $this->data = $data;
     }
 
@@ -41,7 +39,6 @@ class RideAccepted implements ShouldBroadcast
         return array_merge([
             'title' => $this->title,
             'rideId' => $this->rideId,
-            'rider' => $this->rider,
             'status' => 'on a way',
         ], $this->data); // extra data added here
     }

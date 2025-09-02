@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Rider;
 
+use App\Events\RideAccepted;
 use App\Http\Controllers\Controller;
 use App\Jobs\HandleRiderResponseJob;
 use App\Models\Rides;
@@ -30,7 +31,23 @@ class RideController extends Controller
                 'vehicle_id' => $vehicle_id,
             ]);
 
-            HandleRiderResponseJob::dispatch($ride->id, $user->id, 'accept');
+            // HandleRiderResponseJob::dispatch($ride->id, $user->id, 'accept');
+            // fire event
+            $title = 'Driver Found!';
+            $data = [
+                'rideId' => $id,
+                'status' => 'on a way',
+                'riderId' => $user->id,
+                'riderName' => $user->first_name . ' ' . $user->last_name,
+                'riderPhone' => $user->phone,
+                'riderLat' => $user->lat,
+                'riderLng' => $user->lng
+            ];
+            broadcast(new RideAccepted(
+                    $title,
+                    $ride->id,
+                    $data
+                ));
 
             return response()->json(['message' => 'Ride accepted successfully'], 200);
         } catch (QueryException $e) {

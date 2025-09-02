@@ -86,7 +86,6 @@ class HandleRiderResponseJob implements ShouldQueue
             broadcast(new RideAccepted(
                     $title,
                     $ride->id,
-                    $rider,
                     $data
                 ));
 

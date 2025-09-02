@@ -231,11 +231,12 @@ class NotifyRidersJob implements ShouldQueue, ShouldBeUnique
         $customer = User::find($ride->customer_id);
         $customerName = $customer ? $customer->first_name . ' ' . $customer->last_name : 'Customer';
         $title = 'New Ride Request Nearby';
-        $dropoffs = RidesDropOff::where('ride_id', $ride->id)->value('drop_location');
+        $dropoffs = RidesDropOff::select('dropoff_location', 'ride_id')->where('ride_id', $ride->id)->get()->toArray();
         $data = [
             'rideId' => $ride->id,
             'rideStatus' => $ride->status,
             'customerName' => $customerName,
+            'customerAvatar' => $customer ? $customer->avatar : null,
             'baseFare' => $ride->base_fare,
             'pickupLat' => $ride->pickup_lat,
             'pickupLng' => $ride->pickup_lng,

@@ -19,7 +19,7 @@ class RideController extends Controller
         try{
             $user = Auth::user();
             $ride = Rides::find($id);
-
+            if($ride->status != 'finding') throw new Exception('Ride not available', 400);
             $vehicle_id = Vehicle::where('vehicle_of',$user->id)->where('is_driving','active')->value('id');
             if(!$vehicle_id) throw new Exception('You have no active vehicle', 400);
             

@@ -197,7 +197,7 @@ class ProfileController extends Controller
             $user = Auth::user();
 
             Rider::where('user_id', $user->id)->update([
-                'status' => $request->status
+                'online_status' => $request->status
             ]);
             return response()->json(['message' => 'status updated successfully'], 200);
         }catch(QueryException $e){

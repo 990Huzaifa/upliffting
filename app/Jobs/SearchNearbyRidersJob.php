@@ -94,7 +94,7 @@ class SearchNearbyRidersJob implements ShouldQueue, ShouldBeUnique
             INNER JOIN riders ON riders.user_id = users.id
             INNER JOIN vehicles ON vehicles.vehicle_of = users.id
             WHERE users.role = 'rider'
-              AND riders.status = 'online'
+              AND riders.online_status = 'online'
               AND vehicles.is_driving = 'active'
               AND vehicles.vehicle_type_rate_id = ?
             HAVING distance <= ?

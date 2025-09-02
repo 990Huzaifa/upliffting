@@ -29,7 +29,7 @@ function getNearbyRiders(float $customerLat, float $customerLng, float $radiusKm
         FROM users
         INNER JOIN riders ON riders.user_id = users.id
         WHERE users.role = 'rider'
-          AND riders.status = 'online'
+          AND riders.online_status = 'online'
         HAVING distance <= ?
         ORDER BY distance ASC
     ";

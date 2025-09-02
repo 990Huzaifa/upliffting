@@ -69,7 +69,7 @@ class RiderController extends Controller
     {
         try{
             $admin = Auth::guard('admin')->user();
-            $data = User::select('users.*','riders.status as online_status','riders.*','users.id as user_id', 'users.status as account_status')
+            $data = User::select('users.*','riders.online_status','riders.*','users.id as user_id', 'users.status as account_status')
             ->join('riders', 'users.id', '=', 'riders.user_id')->where('users.id', $id)->first();
 
             $vehicles = Vehicle::select('vehicles.*','vehicle_types.title as vehicle_type')

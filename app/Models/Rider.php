@@ -18,7 +18,7 @@ class Rider extends Model
         'total_rides',
         'current_rating',
         'background_verfied',
-        'status',
+        'online_status',
         'is_pet',
     ];
 }

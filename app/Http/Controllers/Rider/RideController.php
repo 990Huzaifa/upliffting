@@ -26,7 +26,7 @@ class RideController extends Controller
             // update ride data 
             $ride->update([
                 'rider_id' => $user->id,
-                'status' => 'on the way',
+                'status' => 'on a way',
                 'vehicle_id' => $vehicle_id,
             ]);
 
@@ -34,7 +34,7 @@ class RideController extends Controller
 
             return response()->json(['message' => 'Ride accepted successfully'], 200);
         } catch (QueryException $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json(['DB error' => $e->getMessage()], 500);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }

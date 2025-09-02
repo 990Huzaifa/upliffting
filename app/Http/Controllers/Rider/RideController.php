@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Auth;
 
 class RideController extends Controller
 {
-    public function acceptRide(Request $request,string $id): JsonResponse
+    public function acceptRide(string $id): JsonResponse
     {
         try{
             $user = Auth::user();

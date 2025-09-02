@@ -10,6 +10,7 @@ use Illuminate\Queue\SerializesModels;
 use App\Models\Rides;
 use App\Models\User;
 use App\Events\RideAccepted;
+use Illuminate\Support\Facades\Log;
 
 
 class HandleRiderResponseJob implements ShouldQueue
@@ -78,6 +79,11 @@ class HandleRiderResponseJob implements ShouldQueue
                     $rider,
                     $data
                 ));
+
+            Log::debug('HandleRiderResponseJob: Driver found', [
+                'rideId' => $this->rideId,
+            ]);
+            return; 
             
         }
     }

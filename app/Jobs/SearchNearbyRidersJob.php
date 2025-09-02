@@ -7,6 +7,7 @@ use App\Events\RideAccepted;
 use App\Events\RidersNotified;
 use App\Events\RideSearchProgress;
 use App\Models\Rides;
+use App\Models\RidesDropOff;
 use App\Models\User;
 use App\Services\FirebaseService;
 use Illuminate\Bus\Queueable;
@@ -230,6 +231,7 @@ class NotifyRidersJob implements ShouldQueue, ShouldBeUnique
         $customer = User::find($ride->customer_id);
         $customerName = $customer ? $customer->first_name . ' ' . $customer->last_name : 'Customer';
         $title = 'New Ride Request Nearby';
+        $dropoffs = RidesDropOff::where('ride_id', $ride->id)->get()->toArray();
         $data = [
             'rideId' => $ride->id,
             'rideStatus' => $ride->status,
@@ -237,10 +239,9 @@ class NotifyRidersJob implements ShouldQueue, ShouldBeUnique
             'baseFare' => $ride->base_fare,
             'pickupLat' => $ride->pickup_lat,
             'pickupLng' => $ride->pickup_lng,
-            'pickupAddress' => $ride->pickup_address,
-            'dropoffAddress' => $ride->dropoff_address,
-            'estimatedDistance' => $ride->estimated_distance,
-            'estimatedFare' => $ride->estimated_fare,
+            'pickupAddress' => $ride->pickup_location,
+            'dropoffAddress' => $dropoffs,
+            'estimatedDistance' => $ride->distance,
             'timeout' => 30 // seconds to respond
         ];
 

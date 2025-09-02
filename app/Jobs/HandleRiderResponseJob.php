@@ -60,6 +60,11 @@ class HandleRiderResponseJob implements ShouldQueue
         $customer = User::find($ride->customer_id);
         $rider = User::find($this->riderId);
 
+        Log::debug('HandleRiderResponseJob: Customer check', [
+            'rideId' => $ride->id,
+            'customer_id' => $ride->customer_id,
+        ]);
+
         if ($customer) {
             $title = 'Driver Found!';
             $body = "Your driver {$rider->first_name} is on the way";

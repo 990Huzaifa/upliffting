@@ -63,7 +63,6 @@ class SearchNearbyRidersJob implements ShouldQueue, ShouldBeUnique
 
         if (!empty($riders) && $this->currentRadius < $this->maxRadius) {
 
-
             NotifyRidersJob::dispatch($this->rideId, $riders, $this->currentRadius, $this->maxRadius);
 
             Log::debug('SearchNearbyRidersJob: riders found', [
@@ -287,9 +286,9 @@ class HandleRiderTimeoutJob implements ShouldQueue, ShouldBeUnique
         $ride = Rides::find($this->rideId);
 
         // Agar ride already accepted ho gai hai ya cancelled hai to kuch nahi karna
-        // if (!$ride || !in_array($ride->status, ['pending'])) {
-        //     return;
-        // }
+        if (!$ride || !in_array($ride->status, ['cancelled', 'on a way'])) {
+            return;
+        }
 
         // No accept within 30s:
         if ($this->currentRadius < $this->maxRadius) {
@@ -354,7 +353,7 @@ class HandleRiderResponseJob implements ShouldQueue
     {
         $ride = Rides::find($this->rideId);
 
-        if (!$ride || $ride->status !== 'pending') {
+        if (!$ride || $ride->status !== 'finding') {
             return;
         }
 
@@ -386,7 +385,7 @@ class HandleRiderResponseJob implements ShouldQueue
             $body = "Your driver {$rider->first_name} is on the way";
             $data = [
                 'rideId' => $ride->id,
-                'status' => 'accepted',
+                'status' => 'on a way',
                 'riderId' => $this->riderId,
                 'riderName' => $rider->first_name . ' ' . $rider->last_name,
                 'riderPhone' => $rider->phone,

@@ -28,8 +28,10 @@ function getNearbyRiders(float $customerLat, float $customerLng, float $radiusKm
             ) AS distance 
         FROM users
         INNER JOIN riders ON riders.user_id = users.id
+        INNER JOIN vehicles ON vehicles.vehicle_of = users.id
         WHERE users.role = 'rider'
           AND riders.online_status = 'online'
+          AND vehicles.is_driving = 'active'
         HAVING distance <= ?
         ORDER BY distance ASC
     ";

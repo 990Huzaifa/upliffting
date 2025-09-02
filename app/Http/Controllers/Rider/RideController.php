@@ -23,17 +23,17 @@ class RideController extends Controller
 
 
             // here we manage cases
-            $status = $request->input('status');
-            switch($status){
-                case 'on a way':
-                    if($ride->status != 'finding') throw new Exception('Ride not available', 400);
-                    break;
-                case 'arrived':
-                    if($ride->status != 'on a way') throw new Exception('Ride not available', 400);
-                    break;
-                default:
-                    throw new Exception('Invalid status', 400);
-            }
+            // $status = $request->input('status');
+            // switch($status){
+            //     case 'on a way':
+            //         if($ride->status != 'finding') throw new Exception('Ride not available', 400);
+            //         break;
+            //     case 'arrived':
+            //         if($ride->status != 'on a way') throw new Exception('Ride not available', 400);
+            //         break;
+            //     default:
+            //         throw new Exception('Invalid status', 400);
+            // }
 
             
             $vehicle = Vehicle::where('vehicle_of',$user->id)->where('is_driving','active')->first();

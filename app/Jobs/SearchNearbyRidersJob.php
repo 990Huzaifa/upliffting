@@ -216,7 +216,7 @@ class NotifyRidersJob implements ShouldQueue, ShouldBeUnique
 
         // Schedule timeout job - if no response in 30 seconds, search with increased radius
         HandleRiderTimeoutJob::dispatch($this->rideId, $this->currentRadius, $this->maxRadius)
-            ->delay(now()->addSeconds(10));
+            ->delay(now()->addSeconds(30));
     }
 
     private function sendNotificationToRiders($ride)
@@ -286,7 +286,7 @@ class HandleRiderTimeoutJob implements ShouldQueue, ShouldBeUnique
         $ride = Rides::find($this->rideId);
 
         // Agar ride already accepted ho gai hai ya cancelled hai to kuch nahi karna
-        if (!$ride || !in_array($ride->status, ['cancelled', 'on a way'])) {
+        if (!$ride || in_array($ride->status, ['cancelled', 'on a way'])) {
             return;
         }
 

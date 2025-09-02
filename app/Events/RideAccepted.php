@@ -5,10 +5,12 @@ namespace App\Events;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Broadcasting\InteractsWithSockets;
 
 class RideAccepted implements ShouldBroadcast
 {
-    use SerializesModels;
+    use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $title;
     public $rideId;
@@ -28,7 +30,10 @@ class RideAccepted implements ShouldBroadcast
         return [ new PrivateChannel('ride.'.$this->rideId) ];
     }
 
-    public function broadcastAs() { return 'RideAccepted'; }
+    public function broadcastAs() 
+    { 
+        return 'RideAccepted'; 
+    }
 
     public function broadcastWith()
     {

@@ -72,7 +72,7 @@ class HandleRiderResponseJob implements ShouldQueue
                 'riderLng' => $rider->lng
             ];
 
-            event(new RideAccepted(
+            broadcast(new RideAccepted(
                     $title,
                     $ride->id,
                     $rider,

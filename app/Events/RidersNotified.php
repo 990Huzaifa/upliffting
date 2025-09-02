@@ -32,7 +32,7 @@ class RidersNotified implements ShouldBroadcast
         // Emit to rider rooms and the ride room
         $channels = [new PrivateChannel('ride.'.$this->rideId)];
         foreach ($this->riderIds as $rid) {
-            $channels[] = new PrivateChannel('rider.'.$rid);
+            $channels[] = new PrivateChannel('driver.'.$rid);
         }
         return $channels;
     }

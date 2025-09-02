@@ -25,7 +25,7 @@ class RideAccepted implements ShouldBroadcast
 
     public function broadcastOn()
     {
-        return [ new PrivateChannel('ride.'.$this->rideId) ];
+        return [ new PrivateChannel('driver.'.$this->rideId) ];
     }
 
     public function broadcastAs() { return 'ride.accepted'; }

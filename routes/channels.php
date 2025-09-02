@@ -16,7 +16,7 @@ Broadcast::channel('customer.{customerId}', function ($user, $customerId) {
     return (int) $user->id === (int) $customerId;
 });
 
-Broadcast::channel('rider.{riderId}', function ($user, $riderId) {
+Broadcast::channel('driver.{riderId}', function ($user, $riderId) {
     return (int) $user->id === (int) $riderId;
 });
 

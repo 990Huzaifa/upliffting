@@ -36,7 +36,7 @@ class EmitRiderLocationJob implements ShouldQueue
             broadcast(new RideLocationUpdated($ride->id, $user->lat, $user->lng));
 
             // Dispatch the job again after 5 seconds if status is not completed
-            if ($ride->status !== 'completed') {
+            if ($ride->status !== 'completed' || $ride->status !== 'cancelled') {
                 EmitRiderLocationJob::dispatch($this->rideId, $this->userId)
                     ->delay(now()->addSeconds(5));
             }

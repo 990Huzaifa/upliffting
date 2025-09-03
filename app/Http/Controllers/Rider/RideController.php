@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Exception;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
+use App\Jobs\EmitRiderLocationJob;
 
 class RideController extends Controller
 {
@@ -23,17 +24,17 @@ class RideController extends Controller
 
 
             // here we manage cases
-            // $status = $request->input('status');
-            // switch($status){
-            //     case 'on a way':
-            //         if($ride->status != 'finding') throw new Exception('Ride not available', 400);
-            //         break;
-            //     case 'arrived':
-            //         if($ride->status != 'on a way') throw new Exception('Ride not available', 400);
-            //         break;
-            //     default:
-            //         throw new Exception('Invalid status', 400);
-            // }
+            $status = $request->input('status');
+            switch($status){
+                case 'on a way':
+                    if($ride->status != 'finding') throw new Exception('Ride not available', 400);
+                    break;
+                case 'arrived':
+                    if($ride->status != 'on a way') throw new Exception('Ride not available', 400);
+                    break;
+                default:
+                    throw new Exception('Invalid status', 400);
+            }
 
             
             $vehicle = Vehicle::where('vehicle_of',$user->id)->where('is_driving','active')->first();
@@ -43,7 +44,7 @@ class RideController extends Controller
             // update ride data 
             $ride->update([
                 'rider_id' => $user->id,
-                'status' => 'on a way',
+                'status' => $status,
                 'vehicle_id' => $vehicle->id,
             ]);
 
@@ -51,7 +52,7 @@ class RideController extends Controller
             $title = 'Driver Found!';
             $data = [
                 'rideId' => $id,
-                'status' => 'on a way',
+                'status' => $status,
                 'riderId' => $user->id,
                 'riderName' => $user->first_name . ' ' . $user->last_name,
                 'riderAvatar' => $user->avatar,
@@ -72,6 +73,8 @@ class RideController extends Controller
                     $ride->id,
                     $data
                 ));
+
+            EmitRiderLocationJob::dispatch($id, $user->id);
 
             return response()->json(['message' => 'Ride accepted successfully'], 200);
         } catch (QueryException $e) {

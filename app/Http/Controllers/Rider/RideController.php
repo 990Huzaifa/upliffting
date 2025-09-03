@@ -49,7 +49,7 @@ class RideController extends Controller
             ]);
 
             // fire event
-            $title = 'Driver Found!';
+            
             $data = [
                 'rideId' => $id,
                 'status' => $status,
@@ -68,13 +68,23 @@ class RideController extends Controller
                     'photos' => $vehicle->photos,
                 ],
             ];
-            broadcast(new RideAccepted(
-                    $title,
-                    $ride->id,
-                    $data
-                ));
+            if($status == 'on a way'){
+                $title = 'Driver Found!';
+                broadcast(new RideAccepted(
+                        $title,
+                        $ride->id,
+                        $data
+                    ));
 
-            EmitRiderLocationJob::dispatch($id, $user->id);
+                EmitRiderLocationJob::dispatch($id, $user->id);
+            }else{
+                $title = 'Driver Arrived!';
+                broadcast(new RideAccepted(
+                        $title,
+                        $ride->id,
+                        $data
+                    ));
+            }
 
             return response()->json(['message' => 'Ride accepted successfully'], 200);
         } catch (QueryException $e) {

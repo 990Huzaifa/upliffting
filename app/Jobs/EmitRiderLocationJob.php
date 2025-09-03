@@ -31,12 +31,12 @@ class EmitRiderLocationJob implements ShouldQueue
         $ride = Rides::find($this->rideId);
         $user = User::find($this->userId);
 
-        if ($ride && ($ride->status !== 'completed' || $ride->status !== 'cancelled')) {
+        if ($ride && $ride->status !== 'completed' && $ride->status !== 'cancelled') {
             // Broadcast rider's location
             broadcast(new RideLocationUpdated($ride->id, $user->lat, $user->lng));
 
-            // Dispatch the job again after 5 seconds if status is not completed
-            if ($ride->status !== 'completed' || $ride->status !== 'cancelled') {
+            // Dispatch the job again after 5 seconds if status is not completed or cancelled
+            if ($ride->status !== 'completed' && $ride->status !== 'cancelled') {
                 EmitRiderLocationJob::dispatch($this->rideId, $this->userId)
                     ->delay(now()->addSeconds(5));
             }

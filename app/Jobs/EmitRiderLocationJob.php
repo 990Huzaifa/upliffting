@@ -31,7 +31,7 @@ class EmitRiderLocationJob implements ShouldQueue
         $ride = Rides::find($this->rideId);
         $user = User::find($this->userId);
 
-        if ($ride && $ride->status !== 'completed') {
+        if ($ride && ($ride->status !== 'completed' || $ride->status !== 'cancelled')) {
             // Broadcast rider's location
             broadcast(new RideLocationUpdated($ride->id, $user->lat, $user->lng));
 

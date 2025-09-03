@@ -34,6 +34,7 @@ return new class extends Migration
             $table->enum('status', ['pending', 'finding', 'on a way', 'arrived', 'started', 'cancelled', 'completed'])->default('pending');
             $table->decimal('final_fare', 8, 2)->nullable();
             $table->longText('reason')->nullable();
+            $table->unsignedBigInteger('cancelled_by')->nullable();
             $table->bigInteger('current_rating')->default(0);
             $table->timestamps();
         });

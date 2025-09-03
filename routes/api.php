@@ -186,7 +186,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 
         // ride
+
         Route::post('accept-ride/{id}', [RiderRideController::class, 'acceptRide']);
+        Route::post('cancel-ride/{id}', [RiderRideController::class, 'cancelRide']);
 
         
         

@@ -27,5 +27,6 @@ class Rides extends Model
         'vehicle_id',
         'promo_code_id',
         'reason',
+        'cancelled_by'
     ];
 }

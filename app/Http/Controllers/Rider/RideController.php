@@ -95,4 +95,24 @@ class RideController extends Controller
         
 
     }
+
+    public function cancelRide(Request $request,string $id):JsonResponse
+    {
+        try{
+            $user = Auth::user();
+            $ride = Rides::find($id);
+
+
+            $ride->update([
+                'cancelled_by' => $user->id,
+                'status' => "cancelled",
+                "reason" => $request->reason ?? null
+            ]);
+            return response()->json(['message' => 'Ride cancelled successfully'], 200);
+        } catch (QueryException $e) {
+            return response()->json(['DB error' => $e->getMessage()], 500);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
 }

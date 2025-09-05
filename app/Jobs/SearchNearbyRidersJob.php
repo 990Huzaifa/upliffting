@@ -118,7 +118,7 @@ class SearchNearbyRidersJob implements ShouldQueue, ShouldBeUnique
             $ride->pickup_lng,
             $ride->pickup_lat,
             $ride->vehicle_type_rate_id,
-            $activeStatuses,
+            ...$activeStatuses,
             $this->currentRadius
         ];
 

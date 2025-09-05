@@ -78,6 +78,8 @@ class SearchNearbyRidersJob implements ShouldQueue, ShouldBeUnique
 
     private function findNearbyRiders($ride)
     {
+        $activeStatuses = ['on a way', 'arrived', 'started'];
+        $placeholders   = implode(',', array_fill(0, count($activeStatuses), '?'));
         $query = "
             SELECT users.*, vehicles.vehicle_type_rate_id, 
                 (
@@ -98,6 +100,15 @@ class SearchNearbyRidersJob implements ShouldQueue, ShouldBeUnique
               AND riders.online_status = 'online'
               AND vehicles.is_driving = 'active'
               AND vehicles.vehicle_type_rate_id = ?
+              AND NOT EXISTS (
+                SELECT 1
+                FROM rides rd
+                WHERE
+                    
+                    (rd.rider_id = users.id OR rd.rider_id = riders.user_id)
+                    AND rd.status IN ($placeholders)
+                    
+            )
             HAVING distance <= ?
             ORDER BY distance ASC
         ";

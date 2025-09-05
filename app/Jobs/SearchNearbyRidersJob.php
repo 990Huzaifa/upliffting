@@ -76,14 +76,11 @@ class SearchNearbyRidersJob implements ShouldQueue, ShouldBeUnique
         $this->handleNoRidersFound($ride);
     }
 
+
     private function findNearbyRiders($ride)
     {
         $query = "
-            SELECT 
-            users.id as user_id,
-            users.lat,
-            users.lng,
-            vehicles.vehicle_type_rate_id,
+            SELECT users.*, vehicles.vehicle_type_rate_id, 
                 (
                     6371 * acos(
                         LEAST(1.0,

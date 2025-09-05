@@ -32,6 +32,11 @@ function getNearbyRiders(float $customerLat, float $customerLng, float $radiusKm
         WHERE users.role = 'rider'
           AND riders.online_status = 'online'
           AND vehicles.is_driving = 'active'
+          AND NOT EXISTS (
+              SELECT 1 FROM upliftingApp.rides 
+              WHERE rides.rider_id = users.id 
+                AND rides.status IN ('on a way', 'arrived', 'started')
+          )
         HAVING distance <= ?
         ORDER BY distance ASC
     ";
@@ -70,6 +75,11 @@ function notifyNearbyRiders($vehicle_type_id, $customerLat, $customerLng, $radiu
                   AND riders.status = 'online'
                   AND vehicles.is_driving = 'active'  -- Only active vehicles
                   AND vehicles.vehicle_type_rate_id = ?  -- Filter by vehicle type
+                  AND NOT EXISTS (
+                        SELECT 1 FROM upliftingApp.rides 
+                        WHERE rides.rider_id = users.id 
+                          AND rides.status IN ('on a way', 'arrived', 'started')
+                    )
                 HAVING distance <= ?  -- Limit to riders within the radius
                 ORDER BY distance ASC
             ";

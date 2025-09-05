@@ -78,52 +78,53 @@ class SearchNearbyRidersJob implements ShouldQueue, ShouldBeUnique
 
     private function findNearbyRiders($ride)
     {
-        // $query = "
-        //     SELECT 
-        //     users.id as user_id,
-        //     users.lat,
-        //     users.lng,
-        //     vehicles.vehicle_type_rate_id,
-        //         (
-        //             6371 * acos(
-        //                 LEAST(1.0,
-        //                     cos(radians(?)) *
-        //                     cos(radians(users.lat)) *
-        //                     cos(radians(users.lng) - radians(?)) +
-        //                     sin(radians(?)) *
-        //                     sin(radians(users.lat))
-        //                 )
-        //             )
-        //         ) AS distance 
-        //     FROM users
-        //     INNER JOIN riders ON riders.user_id = users.id
-        //     INNER JOIN vehicles ON vehicles.vehicle_of = users.id
-        //     WHERE users.role = 'rider'
-        //     AND riders.online_status = 'online'
-        //     AND vehicles.is_driving = 'active'
-        //     AND vehicles.vehicle_type_rate_id = ?
-        //     AND NOT EXISTS (
-        //         SELECT 1 FROM rides 
-        //         WHERE rides.rider_id = users.id 
-        //             AND rides.status IN ('on a way', 'arrived', 'started')
-        //     )
-        //     HAVING distance <= ?
-        //     ORDER BY distance ASC
-        // ";
+        $query = "
+            SELECT 
+            users.id as user_id,
+            users.lat,
+            users.lng,
+            vehicles.vehicle_type_rate_id,
+                (
+                    6371 * acos(
+                        LEAST(1.0,
+                            cos(radians(?)) *
+                            cos(radians(users.lat)) *
+                            cos(radians(users.lng) - radians(?)) +
+                            sin(radians(?)) *
+                            sin(radians(users.lat))
+                        )
+                    )
+                ) AS distance 
+            FROM users
+            INNER JOIN riders ON riders.user_id = users.id
+            INNER JOIN vehicles ON vehicles.vehicle_of = users.id
+            WHERE users.role = 'rider'
+            AND riders.online_status = 'online'
+            AND vehicles.is_driving = 'active'
+            AND vehicles.vehicle_type_rate_id = ?
+            AND NOT EXISTS (
+                SELECT 1 FROM rides 
+                WHERE rides.rider_id = users.id 
+                    AND rides.status IN ('on a way', 'arrived', 'started')
+            )
+            HAVING distance <= ?
+            ORDER BY distance ASC
+        ";
 
-        // $bindings = [
-        //     $ride->pickup_lat,
-        //     $ride->pickup_lng,
-        //     $ride->pickup_lat,
-        //     $ride->vehicle_type_rate_id,
-        //     $this->currentRadius
-        // ];
+        $bindings = [
+            $ride->pickup_lat,
+            $ride->pickup_lng,
+            $ride->pickup_lat,
+            $ride->vehicle_type_rate_id,
+            $this->currentRadius
+        ];
 
-        // $result = DB::select($query, $bindings);
-        // Log::info('Available Riders Count: ' . count($result));
-        // Log::info('Available Riders:', $result);
-    
-        return null;
+        $result = DB::select($query, $bindings);
+        Log::debug('yaha mily riders', [
+                'rideId' => $this->rideId,
+                'count' => count($result),
+            ]);
+        return $result;
     }
 
     private function notifyCustomerSearchProgress($ride)

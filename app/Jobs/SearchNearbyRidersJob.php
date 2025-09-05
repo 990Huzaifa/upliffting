@@ -105,7 +105,7 @@ class SearchNearbyRidersJob implements ShouldQueue, ShouldBeUnique
                 FROM rides rd
                 WHERE
                     
-                    (rd.rider_id = users.id OR rd.rider_id = riders.user_id)
+                    (rd.rider_id = users.id)
                     AND rd.status IN ($placeholders)
                     
             )
@@ -118,6 +118,7 @@ class SearchNearbyRidersJob implements ShouldQueue, ShouldBeUnique
             $ride->pickup_lng,
             $ride->pickup_lat,
             $ride->vehicle_type_rate_id,
+            $activeStatuses,
             $this->currentRadius
         ];
 

@@ -78,7 +78,7 @@ class SearchNearbyRidersJob implements ShouldQueue, ShouldBeUnique
 
     private function findNearbyRiders($ride)
     {
-        // Riders to exclude if they have any of these active ride statuses
+        // Riders ko exclude karna hai agar unki koi ride in statuses me ho
         $activeStatuses = ['on a way', 'arrived', 'started'];
         $placeholders   = implode(',', array_fill(0, count($activeStatuses), '?'));
 
@@ -96,41 +96,53 @@ class SearchNearbyRidersJob implements ShouldQueue, ShouldBeUnique
                     )
                 ) AS distance
             FROM users
-            INNER JOIN riders   ON riders.user_id   = users.id
+            INNER JOIN riders   ON riders.user_id    = users.id
             INNER JOIN vehicles ON vehicles.vehicle_of = users.id
+
+            -- Active rides ka ek compact list (rider_id level par)
+            LEFT JOIN (
+                SELECT DISTINCT rider_id
+                FROM rides
+                WHERE status IN ($placeholders)
+                -- Agar schema me ye columns hon to uncomment kar dein:
+                -- AND completed_at IS NULL
+                -- AND canceled_at  IS NULL
+                -- AND deleted_at   IS NULL
+            ) ar ON ar.rider_id IN (users.id, riders.user_id)
+
             WHERE
                 users.role = 'rider'
                 AND riders.online_status = 'online'
-                AND vehicles.is_driving = 'active'
+                AND vehicles.is_driving  = 'active'
                 AND vehicles.vehicle_type_rate_id = ?
-                AND NOT EXISTS (
-                    SELECT 1
-                    FROM rides rd
-                    WHERE
-                        (rd.rider_id = users.id) -- adjust if your FK is different
-                        AND rd.status IN ($placeholders)
-                )
+                -- Anti-join: jinke paas active ride haali me ho, unko drop karo
+                AND ar.rider_id IS NULL
+
             HAVING distance <= ?
             ORDER BY distance ASC
         ";
 
-        // IMPORTANT: Bindings ka order SQL me ? ke order jaisa hi hona chahiye
-        // 1) lat, lng, lat  2) vehicle_type_rate_id  3) activeStatuses (...)  4) radius
+        // Bindings ka sahi order:
+        // 1) lat, lng, lat
+        // 2) activeStatuses (...)  -> for the subquery placeholders
+        // 3) vehicle_type_rate_id
+        // 4) radius
         $bindings = array_merge(
             [
                 $ride->pickup_lat,
                 $ride->pickup_lng,
                 $ride->pickup_lat,
-                $ride->vehicle_type_rate_id,
             ],
             $activeStatuses,
             [
+                $ride->vehicle_type_rate_id,
                 $this->currentRadius,
             ]
         );
 
         return DB::select($query, $bindings);
     }
+
 
 
     private function notifyCustomerSearchProgress($ride)

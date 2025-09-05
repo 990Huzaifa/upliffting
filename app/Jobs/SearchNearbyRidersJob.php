@@ -79,7 +79,11 @@ class SearchNearbyRidersJob implements ShouldQueue, ShouldBeUnique
     private function findNearbyRiders($ride)
     {
         $query = "
-            SELECT users.*, vehicles.vehicle_type_rate_id, 
+            SELECT 
+            users.id as user_id,
+            users.lat,
+            users.lng,
+            vehicles.vehicle_type_rate_id,
                 (
                     6371 * acos(
                         LEAST(1.0,
@@ -115,7 +119,11 @@ class SearchNearbyRidersJob implements ShouldQueue, ShouldBeUnique
             $this->currentRadius
         ];
 
-        return DB::select($query, $bindings);
+        $result = DB::select($query, $bindings);
+        Log::info('Available Riders Count: ' . count($result));
+        Log::info('Available Riders:', $result);
+    
+        return $result;
     }
 
     private function notifyCustomerSearchProgress($ride)

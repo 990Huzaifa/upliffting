@@ -78,72 +78,77 @@ class SearchNearbyRidersJob implements ShouldQueue, ShouldBeUnique
 
     private function findNearbyRiders($ride)
     {
-        // Riders ko exclude karna hai agar unki koi ride in statuses me ho
-        $activeStatuses = ['on a way', 'arrived', 'started'];
-        $placeholders   = implode(',', array_fill(0, count($activeStatuses), '?'));
-
         $query = "
-            SELECT
-                users.*,
-                vehicles.vehicle_type_rate_id,
+            SELECT users.*, vehicles.vehicle_type_rate_id, 
                 (
                     6371 * acos(
-                        LEAST(
-                            1.0,
-                            cos(radians(?)) * cos(radians(users.lat)) * cos(radians(users.lng) - radians(?)) +
-                            sin(radians(?)) * sin(radians(users.lat))
+                        LEAST(1.0,
+                            cos(radians(?)) *
+                            cos(radians(users.lat)) *
+                            cos(radians(users.lng) - radians(?)) +
+                            sin(radians(?)) *
+                            sin(radians(users.lat))
                         )
                     )
-                ) AS distance
+                ) AS distance 
             FROM users
-            INNER JOIN riders   ON riders.user_id    = users.id
+            INNER JOIN riders ON riders.user_id = users.id
             INNER JOIN vehicles ON vehicles.vehicle_of = users.id
-
-            -- Active rides ka ek compact list (rider_id level par)
-            LEFT JOIN (
-                SELECT DISTINCT rider_id
-                FROM rides
-                WHERE status IN ($placeholders)
-                -- Agar schema me ye columns hon to uncomment kar dein:
-                -- AND completed_at IS NULL
-                -- AND canceled_at  IS NULL
-                -- AND deleted_at   IS NULL
-            ) ar ON ar.rider_id IN (users.id, riders.user_id)
-
-            WHERE
-                users.role = 'rider'
-                AND riders.online_status = 'online'
-                AND vehicles.is_driving  = 'active'
-                AND vehicles.vehicle_type_rate_id = ?
-                -- Anti-join: jinke paas active ride haali me ho, unko drop karo
-                AND ar.rider_id IS NULL
-
+            WHERE users.role = 'rider'
+              AND riders.online_status = 'online'
+              AND vehicles.is_driving = 'active'
+              AND vehicles.vehicle_type_rate_id = ?
             HAVING distance <= ?
             ORDER BY distance ASC
         ";
 
-        // Bindings ka sahi order:
-        // 1) lat, lng, lat
-        // 2) activeStatuses (...)  -> for the subquery placeholders
-        // 3) vehicle_type_rate_id
-        // 4) radius
-        $bindings = array_merge(
-            [
-                $ride->pickup_lat,
-                $ride->pickup_lng,
-                $ride->pickup_lat,
-            ],
-            $activeStatuses,
-            [
-                $ride->vehicle_type_rate_id,
-                $this->currentRadius,
-            ]
-        );
+        $bindings = [
+            $ride->pickup_lat,
+            $ride->pickup_lng,
+            $ride->pickup_lat,
+            $ride->vehicle_type_rate_id,
+            $this->currentRadius
+        ];
 
-        return DB::select($query, $bindings);
+        // return DB::select($query, $bindings);
+         $candidates = DB::select($query, $bindings);
+
+        // Agar koi candidate hi nahi mila to bas return
+        if (empty($candidates)) {
+            return $candidates;
+        }
+
+        // 2) CANDIDATE IDs nikaalo (users.id). riders.user_id = users.id hai join se.
+        $candidateIds = array_map(static fn($row) => $row->id, $candidates);
+
+        // 3) Active/engaged statuses jinko exclude karna hai
+        $activeStatuses = ['on a way', 'arrived', 'started'];
+
+        // 4) Rides table se un candidates me se engaged riders nikaalo (DISTINCT)
+        // NOTE: agar aapke schema me completed/canceled flags hote hain to unhe uncomment karein.
+        $engagedIds = DB::table('rides')
+            ->select('rider_id')
+            ->whereIn('rider_id', $candidateIds)
+            ->whereIn('status', $activeStatuses)
+            // ->whereNull('completed_at')
+            // ->whereNull('canceled_at')
+            ->distinct()
+            ->pluck('rider_id')
+            ->all();
+
+        if (!empty($engagedIds)) {
+            // 5) Fast lookup ke liye set bana lo
+            $engagedSet = array_flip($engagedIds);
+
+            // 6) Candidates ko filter karo: jo engagedSet me na ho
+            $candidates = array_values(array_filter(
+                $candidates,
+                static fn($row) => !isset($engagedSet[$row->id])
+            ));
+        }
+
+        return $candidates;
     }
-
-
 
     private function notifyCustomerSearchProgress($ride)
     {   

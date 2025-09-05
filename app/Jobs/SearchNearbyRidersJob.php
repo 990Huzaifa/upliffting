@@ -94,13 +94,15 @@ class SearchNearbyRidersJob implements ShouldQueue, ShouldBeUnique
             FROM users
             INNER JOIN riders ON riders.user_id = users.id
             INNER JOIN vehicles ON vehicles.vehicle_of = users.id
-            LEFT JOIN rides ON rides.rider_id = users.id 
-                        AND rides.status IN ('on a way', 'arrived', 'started')
             WHERE users.role = 'rider'
             AND riders.online_status = 'online'
             AND vehicles.is_driving = 'active'
             AND vehicles.vehicle_type_rate_id = ?
-            AND rides.rider_id IS NULL
+            AND NOT EXISTS (
+                SELECT 1 FROM rides 
+                WHERE rides.rider_id = users.id 
+                    AND rides.status IN ('on a way', 'arrived', 'started')
+            )
             HAVING distance <= ?
             ORDER BY distance ASC
         ";

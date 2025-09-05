@@ -78,52 +78,60 @@ class SearchNearbyRidersJob implements ShouldQueue, ShouldBeUnique
 
     private function findNearbyRiders($ride)
     {
+        // Riders to exclude if they have any of these active ride statuses
         $activeStatuses = ['on a way', 'arrived', 'started'];
         $placeholders   = implode(',', array_fill(0, count($activeStatuses), '?'));
+
         $query = "
-            SELECT users.*, vehicles.vehicle_type_rate_id, 
+            SELECT
+                users.*,
+                vehicles.vehicle_type_rate_id,
                 (
                     6371 * acos(
-                        LEAST(1.0,
-                            cos(radians(?)) *
-                            cos(radians(users.lat)) *
-                            cos(radians(users.lng) - radians(?)) +
-                            sin(radians(?)) *
-                            sin(radians(users.lat))
+                        LEAST(
+                            1.0,
+                            cos(radians(?)) * cos(radians(users.lat)) * cos(radians(users.lng) - radians(?)) +
+                            sin(radians(?)) * sin(radians(users.lat))
                         )
                     )
-                ) AS distance 
+                ) AS distance
             FROM users
-            INNER JOIN riders ON riders.user_id = users.id
+            INNER JOIN riders   ON riders.user_id   = users.id
             INNER JOIN vehicles ON vehicles.vehicle_of = users.id
-            WHERE users.role = 'rider'
-              AND riders.online_status = 'online'
-              AND vehicles.is_driving = 'active'
-              AND vehicles.vehicle_type_rate_id = ?
-              AND NOT EXISTS (
-                SELECT 1
-                FROM rides rd
-                WHERE
-                    
-                    (rd.rider_id = users.id)
-                    AND rd.status IN ($placeholders)
-                    
-            )
+            WHERE
+                users.role = 'rider'
+                AND riders.online_status = 'online'
+                AND vehicles.is_driving = 'active'
+                AND vehicles.vehicle_type_rate_id = ?
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM rides rd
+                    WHERE
+                        (rd.rider_id = users.id) -- adjust if your FK is different
+                        AND rd.status IN ($placeholders)
+                )
             HAVING distance <= ?
             ORDER BY distance ASC
         ";
 
-        $bindings = [
-            $ride->pickup_lat,
-            $ride->pickup_lng,
-            $ride->pickup_lat,
-            $ride->vehicle_type_rate_id,
-            ...$activeStatuses,
-            $this->currentRadius
-        ];
+        // IMPORTANT: Bindings ka order SQL me ? ke order jaisa hi hona chahiye
+        // 1) lat, lng, lat  2) vehicle_type_rate_id  3) activeStatuses (...)  4) radius
+        $bindings = array_merge(
+            [
+                $ride->pickup_lat,
+                $ride->pickup_lng,
+                $ride->pickup_lat,
+                $ride->vehicle_type_rate_id,
+            ],
+            $activeStatuses,
+            [
+                $this->currentRadius,
+            ]
+        );
 
         return DB::select($query, $bindings);
     }
+
 
     private function notifyCustomerSearchProgress($ride)
     {   

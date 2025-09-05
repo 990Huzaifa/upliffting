@@ -78,26 +78,26 @@ class SearchNearbyRidersJob implements ShouldQueue, ShouldBeUnique
 
     private function findNearbyRiders($ride)
     {
+        // Base query same
         $query = "
-            SELECT users.*, vehicles.vehicle_type_rate_id, 
+            SELECT 
+                users.*,
+                vehicles.vehicle_type_rate_id, 
                 (
                     6371 * acos(
                         LEAST(1.0,
-                            cos(radians(?)) *
-                            cos(radians(users.lat)) *
-                            cos(radians(users.lng) - radians(?)) +
-                            sin(radians(?)) *
-                            sin(radians(users.lat))
+                            cos(radians(?)) * cos(radians(users.lat)) * cos(radians(users.lng) - radians(?)) +
+                            sin(radians(?)) * sin(radians(users.lat))
                         )
                     )
                 ) AS distance 
             FROM users
-            INNER JOIN riders ON riders.user_id = users.id
+            INNER JOIN riders   ON riders.user_id    = users.id
             INNER JOIN vehicles ON vehicles.vehicle_of = users.id
             WHERE users.role = 'rider'
-              AND riders.online_status = 'online'
-              AND vehicles.is_driving = 'active'
-              AND vehicles.vehicle_type_rate_id = ?
+            AND riders.online_status   = 'online'
+            AND vehicles.is_driving    = 'active'
+            AND vehicles.vehicle_type_rate_id = ?
             HAVING distance <= ?
             ORDER BY distance ASC
         ";
@@ -110,45 +110,36 @@ class SearchNearbyRidersJob implements ShouldQueue, ShouldBeUnique
             $this->currentRadius
         ];
 
-        // return DB::select($query, $bindings);
-         $candidates = DB::select($query, $bindings);
+        $candidates = DB::select($query, $bindings);
 
-        // Agar koi candidate hi nahi mila to bas return
         if (empty($candidates)) {
             return $candidates;
         }
 
-        // 2) CANDIDATE IDs nikaalo (users.id). riders.user_id = users.id hai join se.
-        $candidateIds = array_map(static fn($row) => $row->id, $candidates);
+        // Candidates = users.id (kyunki rides.rider_id bhi users.id hai)
+        $candidateUserIds = array_map(static fn($row) => (int)$row->id, $candidates);
 
-        // 3) Active/engaged statuses jinko exclude karna hai
         $activeStatuses = ['on a way', 'arrived', 'started'];
 
-        // 4) Rides table se un candidates me se engaged riders nikaalo (DISTINCT)
-        // NOTE: agar aapke schema me completed/canceled flags hote hain to unhe uncomment karein.
         $engagedIds = DB::table('rides')
             ->select('rider_id')
-            ->whereIn('rider_id', $candidateIds)
+            ->whereIn('rider_id', $candidateUserIds)  // ab yeh users.id ke sath match karega
             ->whereIn('status', $activeStatuses)
-            // ->whereNull('completed_at')
-            // ->whereNull('canceled_at')
             ->distinct()
             ->pluck('rider_id')
             ->all();
 
         if (!empty($engagedIds)) {
-            // 5) Fast lookup ke liye set bana lo
-            $engagedSet = array_flip($engagedIds);
-
-            // 6) Candidates ko filter karo: jo engagedSet me na ho
+            $engagedSet = array_flip(array_map('intval', $engagedIds));
             $candidates = array_values(array_filter(
                 $candidates,
-                static fn($row) => !isset($engagedSet[$row->id])
+                static fn($row) => !isset($engagedSet[(int)$row->id])
             ));
         }
 
         return $candidates;
     }
+
 
     private function notifyCustomerSearchProgress($ride)
     {   

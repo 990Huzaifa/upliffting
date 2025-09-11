@@ -223,6 +223,8 @@ class RideController extends Controller
 
             $ride->update([
                 'status' => 'cancelled',
+                'cancel_by_role' => 'customer',
+                'cancelled_by' => $user->id,
                 'reason' => $request->reason ?? null,
             ]);
 

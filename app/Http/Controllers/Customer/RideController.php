@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Events\AddStopRequest;
 use App\Http\Controllers\Controller;
 use App\Jobs\SearchNearbyRidersJob;
 use App\Models\Payment;
@@ -50,47 +51,47 @@ class RideController extends Controller
             $countryName = $location['country'];
             $stateName = $location['state'];
             $cityName = $location['city'];
-            
+
 
             // Fetch all vehicle types and their pricing
-            $vehicleTypeRates = VehicleTypeRate::select('vehicle_type_rates.*', 'vehicle_types.title','vehicle_types.icon')
-            ->join('vehicle_types', 'vehicle_type_rates.vehicle_type_id', '=', 'vehicle_types.id')
-            ->join('countries', 'vehicle_type_rates.country_id', '=', 'countries.id')
-            ->join('states', 'vehicle_type_rates.state_id', '=', 'states.id')
-            ->join('cities', 'vehicle_type_rates.city_id', '=', 'cities.id')
-            ->when($countryName, function ($q) use ($countryName) {
-                $q->where('countries.name', 'LIKE', "%$countryName%");
-            })
-            ->when($stateName, function ($q) use ($stateName) {
-                $q->where('states.name', 'LIKE', "%$stateName%");
-            })
-            ->when($cityName, function ($q) use ($cityName) {
-                $q->where('cities.name', 'LIKE', "%$cityName%");
-            })
-            ->get();
+            $vehicleTypeRates = VehicleTypeRate::select('vehicle_type_rates.*', 'vehicle_types.title', 'vehicle_types.icon')
+                ->join('vehicle_types', 'vehicle_type_rates.vehicle_type_id', '=', 'vehicle_types.id')
+                ->join('countries', 'vehicle_type_rates.country_id', '=', 'countries.id')
+                ->join('states', 'vehicle_type_rates.state_id', '=', 'states.id')
+                ->join('cities', 'vehicle_type_rates.city_id', '=', 'cities.id')
+                ->when($countryName, function ($q) use ($countryName) {
+                    $q->where('countries.name', 'LIKE', "%$countryName%");
+                })
+                ->when($stateName, function ($q) use ($stateName) {
+                    $q->where('states.name', 'LIKE', "%$stateName%");
+                })
+                ->when($cityName, function ($q) use ($cityName) {
+                    $q->where('cities.name', 'LIKE', "%$cityName%");
+                })
+                ->get();
 
             $fareList = [];
-            
+
             foreach ($vehicleTypeRates as $rate) {
                 // Get surge multiplier for this vehicle type, time and day
                 $surge_multiplier = getSurgeMultiplier($rate->id, $currentTime, $day, $ip);
 
                 // Fare formula
-                $actual_fare = ($rate->base_fare + 
-                                ($distance_km * $rate->price_per_km) + 
-                                ($time_min * $rate->price_per_min)) * $surge_multiplier;
+                $actual_fare = ($rate->base_fare +
+                    ($distance_km * $rate->price_per_km) +
+                    ($time_min * $rate->price_per_min)) * $surge_multiplier;
 
                 $fareList[] = [
-                    'id'    => $rate->id,
-                    'name'  => $rate->title ?? '',         // Add 'name' column to VehicleTypeRate if not present
+                    'id' => $rate->id,
+                    'name' => $rate->title ?? '',         // Add 'name' column to VehicleTypeRate if not present
                     'image' => $rate->icon ?? '',       // Add 'image' column if not already there
-                    'fare'  => round($actual_fare, 2),
+                    'fare' => round($actual_fare, 2),
                 ];
             }
 
             return response()->json(['fares' => $fareList], 200);
 
-        }  catch (QueryException $e) {
+        } catch (QueryException $e) {
             return response()->json(['DB error' => $e->getMessage()], 500);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
@@ -113,9 +114,9 @@ class RideController extends Controller
                 'duration' => 'required|numeric|min:0',
                 'base_fare' => 'required|numeric|min:0',
                 'discount_amount' => 'nullable|numeric|min:0',
-                'lat'=>'required',
-                'lng'=>'required',
-            ],[
+                'lat' => 'required',
+                'lng' => 'required',
+            ], [
                 'pickup.required' => 'Pickup location is required.',
 
                 'drop_offs.*.required' => 'Each drop-off location is required.',
@@ -136,7 +137,7 @@ class RideController extends Controller
             // Store ride logic here
             // 1:step promocode
             $promo = null;
-            if($request->promocode){
+            if ($request->promocode) {
                 $promo = PromoCode::where('code', $request->promocode)
                     ->where('is_active', true)
                     ->where('expiry_date', '>=', now())
@@ -172,7 +173,7 @@ class RideController extends Controller
                 ->where('is_default', true)
                 ->value('id');
 
-            if (!$payment_method_id){
+            if (!$payment_method_id) {
                 return response()->json(['message' => 'No default payment method found. Please add a payment method first.', 'add_card' => 0], 200);
             }
 
@@ -217,7 +218,8 @@ class RideController extends Controller
                 'reason.string' => 'Reason must be a string.',
                 'reason.max' => 'Reason cannot exceed 255 characters.',
             ]);
-            if ($validator->fails()) throw new Exception($validator->errors()->first(), 401);
+            if ($validator->fails())
+                throw new Exception($validator->errors()->first(), 401);
 
             $ride->update([
                 'status' => 'cancelled',
@@ -226,6 +228,52 @@ class RideController extends Controller
 
             return response()->json(['message' => 'Ride cancelled successfully.'], 200);
 
+        } catch (QueryException $e) {
+            return response()->json(['DB error' => $e->getMessage()], 500);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function addStopRequest(Request $request, $id): JsonResponse
+    {
+        try {
+            $user = Auth::user();
+            $ride = Rides::findOrFail($id);
+            if ($ride->customer_id !== $user->id) {
+                throw new Exception('You are not authorized to stop in this ride.', 403);
+            }
+            if ($ride->status === 'completed' || $ride->status === 'cancelled') {
+                throw new Exception('Invalid request', 400);
+            }
+
+            $validator = Validator::make($request->all(), [
+                'drop_offs' => 'required|array',
+                'drop_offs.*' => 'required|string|max:255',
+                'base_fare' => 'required|numeric|min:0',
+            ], [
+                'drop_offs.required' => 'Drop offs are required.',
+                'drop_offs.array' => 'Drop offs must be an array.',
+                'drop_offs.*.required' => 'Each drop off is required.',
+                'drop_offs.*.string' => 'Each drop off must be a string.',
+                'drop_offs.*.max' => 'Each drop off cannot exceed 255 characters.',
+                'base_fare.required' => 'Base fare is required.',
+                'base_fare.numeric' => 'Base fare must be a number.',
+                'base_fare.min' => 'Base fare must be at least 0.',
+            ]);
+            if ($validator->fails())
+                throw new Exception($validator->errors()->first(), 400);
+
+            $data = [
+                'drop_offs' => $request->drop_offs,
+                'base_fare' => $request->base_fare,
+            ];
+            broadcast(new AddStopRequest(
+                $ride->id,
+                $data,
+                'pending'
+            ));
+            return response()->json(['message' => 'Add Stop request sent successfully'], 200);
         } catch (QueryException $e) {
             return response()->json(['DB error' => $e->getMessage()], 500);
         } catch (Exception $e) {

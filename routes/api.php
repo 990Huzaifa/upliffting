@@ -186,9 +186,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 
         // ride
-
-        Route::post('accept-ride/{id}', [RiderRideController::class, 'acceptRide']);
-        Route::post('cancel-ride/{id}', [RiderRideController::class, 'cancelRide']);
+        Route::controller(RiderRideController::class)->group(function () {
+            Route::post('accept-ride/{id}', 'acceptRide');
+            Route::post('cancel-ride/{id}', 'cancelRide');
+            Route::post('add-stop-request/{id}', 'addStopRequest');
+        });
 
         
         
@@ -225,11 +227,27 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('/payment-methods/switch/{id}', 'switchAccount');
         });
 
+        Route::controller(CustomerRideController::class)->group(function () {
+            Route::post('calculate-fare', 'calculateFare');
+            Route::post('request-ride', 'store');
+            Route::post('add-stop-request/{id}', 'addStopRequest');
+            Route::post('cancel-ride/{id}', 'cancelRide');
 
-        Route::post('calculate-fare', [CustomerRideController::class, 'calculateFare']);
-        Route::post('request-ride', [CustomerRideController::class, 'store']);
-        Route::post('cancel-ride/{id}', [CustomerRideController::class, 'cancelRide']);
+        });
+
+
+
+
+
         Route::get('vehicle-type', [VehicleTypeRateController::class, 'list2']);
+
+
+
+
+
+
+
+
         
     });
     

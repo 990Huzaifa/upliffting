@@ -107,10 +107,25 @@ class RideController extends Controller
         try {
             $user = Auth::user();
             $ride = Rides::find($id);
+            if ($ride->rider_id !== $user->id) {
+                throw new Exception('You are not authorized to cancel this ride.', 403);
+            }
+
+            if ($ride->status === 'completed' || $ride->status === 'cancelled' || $ride->status === 'finding') {
+                throw new Exception('This ride cannot be cancelled.', 400);
+            }
+            $validator = Validator::make($request->all(), [
+                'reason' => 'nullable|string|max:255',
+            ], [
+                'reason.string' => 'Reason must be a string.',
+                'reason.max' => 'Reason cannot exceed 255 characters.',
+            ]);
+            if ($validator->fails())
+                throw new Exception($validator->errors()->first(), 401);
 
 
             $ride->update([
-                'cancel_by_role' => 'customer',
+                'cancel_by_role' => 'rider',
                 'cancelled_by' => $user->id,
                 'status' => "cancelled",
                 "reason" => $request->reason ?? null

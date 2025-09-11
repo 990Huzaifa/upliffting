@@ -188,7 +188,7 @@ class RideController extends Controller
 
             // 5: notify the nearby riders
 
-            SearchNearbyRidersJob::dispatch($ride->id);
+            SearchNearbyRidersJob::dispatch($ride->id)->onQueue('high');
 
 
             return response()->json(['message' => 'Finding ride for you.'], 200);

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Events\AddStopRequest;
+use App\Events\RideCancelled;
 use App\Http\Controllers\Controller;
 use App\Jobs\SearchNearbyRidersJob;
 use App\Models\Payment;
@@ -97,7 +98,6 @@ class RideController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-
 
     public function store(Request $request)
     {
@@ -227,6 +227,14 @@ class RideController extends Controller
                 'cancelled_by' => $user->id,
                 'reason' => $request->reason ?? null,
             ]);
+
+            // push event on cancel
+
+            broadcast(new RideCancelled(
+                'This ride has been cancelled',
+                $ride->id,
+                $request->reason
+            ));
 
             return response()->json(['message' => 'Ride cancelled successfully.'], 200);
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Rider;
 
 use App\Events\AddStopRequest;
 use App\Events\RideAccepted;
+use App\Events\RideCancelled;
 use App\Http\Controllers\Controller;
 use App\Jobs\HandleRiderResponseJob;
 use App\Models\Rides;
@@ -130,6 +131,13 @@ class RideController extends Controller
                 'status' => "cancelled",
                 "reason" => $request->reason ?? null
             ]);
+
+            broadcast(new RideCancelled(
+                'This ride has been cancelled',
+                $ride->id,
+                $request->reason
+            ));
+            
             return response()->json(['message' => 'Ride cancelled successfully'], 200);
         } catch (QueryException $e) {
             return response()->json(['DB error' => $e->getMessage()], 500);

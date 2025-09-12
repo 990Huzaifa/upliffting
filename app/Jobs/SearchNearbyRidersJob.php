@@ -248,6 +248,7 @@ class NotifyRidersJob implements ShouldQueue, ShouldBeUnique
             'rideStatus' => $ride->status,
             'customerName' => $customerName,
             'customerAvatar' => $customer ? $customer->avatar : null,
+            'customerPhone' => $customer->phone,
             'baseFare' => $ride->base_fare,
             'pickupLat' => $ride->pickup_lat,
             'pickupLng' => $ride->pickup_lng,

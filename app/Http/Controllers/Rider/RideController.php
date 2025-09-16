@@ -38,6 +38,10 @@ class RideController extends Controller
                     if ($ride->status != 'on a way')
                         throw new Exception('Ride not available', 400);
                     break;
+                case 'started':
+                    if ($ride->status != 'arrived')
+                        throw new Exception('Ride not available', 400);
+                    break;
                 default:
                     throw new Exception('Invalid status', 400);
             }
@@ -84,8 +88,15 @@ class RideController extends Controller
                 ));
 
                 EmitRiderLocationJob::dispatch($id, $user->id);
-            } else {
+            } elseif ($status == 'arrived') {
                 $title = 'Driver Arrived!';
+                broadcast(new RideAccepted(
+                    $title,
+                    $ride->id,
+                    $data
+                ));
+            }elseif ($status == 'started') {
+                $title = 'Ride Started!';
                 broadcast(new RideAccepted(
                     $title,
                     $ride->id,

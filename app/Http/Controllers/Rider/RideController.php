@@ -97,7 +97,7 @@ class RideController extends Controller
                 
                 $title = 'Driver Arrived!';
                 $firebase->sendToDevice(
-                    'rider',$customer_fcm,$title,"Driver is waiting for you",$data);
+                    'customer',$customer_fcm,$title,"Driver is waiting for you",['rideId' => $id,'status' => $status,]);
 
                 broadcast(new RideAccepted(
                     $title,
@@ -107,7 +107,7 @@ class RideController extends Controller
             }elseif ($status == 'started') {
                 $title = 'Ride Started!';
                 $firebase->sendToDevice(
-                    'rider',$customer_fcm,$title,"Your ride has started now",$data);
+                    'customer',$customer_fcm,$title,"Your ride has started now",['rideId' => $id,'status' => $status,]);
                 broadcast(new RideAccepted(
                     $title,
                     $ride->id,

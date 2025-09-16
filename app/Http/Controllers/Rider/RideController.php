@@ -104,7 +104,7 @@ class RideController extends Controller
                 ));
             }
 
-            return response()->json(['message' => 'Ride accepted successfully'], 200);
+            return response()->json(['message' => 'Ride updated successfully'], 200);
         } catch (QueryException $e) {
             return response()->json(['DB error' => $e->getMessage()], 500);
         } catch (Exception $e) {

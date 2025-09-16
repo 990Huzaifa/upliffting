@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Jobs\HandleRiderResponseJob;
 use App\Models\Rides;
 use App\Models\RidesDropOff;
+use App\Models\User;
 use App\Models\Vehicle;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -17,6 +18,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
 use App\Jobs\EmitRiderLocationJob;
 use Illuminate\Support\Facades\Validator;
+use App\Services\FirebaseService;
 
 class RideController extends Controller
 {
@@ -51,6 +53,9 @@ class RideController extends Controller
             if (!$vehicle)
                 throw new Exception('You have no active vehicle', 400);
             // if($vehicle->approved_at == null) throw new Exception('Your vehicle is not approved', 400);
+            // retrive fcm of customer
+            $customer_fcm = User::where('id', $ride->customer_id)->value('fcm_id');
+            $firebase = new FirebaseService();
 
             // update ride data 
             $ride->update([
@@ -89,7 +94,11 @@ class RideController extends Controller
 
                 EmitRiderLocationJob::dispatch($id, $user->id);
             } elseif ($status == 'arrived') {
+                
                 $title = 'Driver Arrived!';
+                $firebase->sendToDevice(
+                    'rider',$customer_fcm,$title,"Driver is waiting for you",$data);
+
                 broadcast(new RideAccepted(
                     $title,
                     $ride->id,
@@ -97,6 +106,8 @@ class RideController extends Controller
                 ));
             }elseif ($status == 'started') {
                 $title = 'Ride Started!';
+                $firebase->sendToDevice(
+                    'rider',$customer_fcm,$title,"Your ride has started now",$data);
                 broadcast(new RideAccepted(
                     $title,
                     $ride->id,

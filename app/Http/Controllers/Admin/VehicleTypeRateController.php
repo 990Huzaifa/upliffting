@@ -25,12 +25,31 @@ class VehicleTypeRateController extends Controller
     {
         try{            
             $admin = Auth::guard('admin')->user();
+
+            // filter by country state city
+            $country = $request->query('country');
+            $state = $request->query('state');
+            $city = $request->query('city');
+
+
             $query = VehicleTypeRate::select('vehicle_type_rates.*', 'countries.name as country_name', 'states.name as state_name', 'cities.name as city_name', 'vehicle_types.title as vehicle_type_title','vehicle_types.icon as icon')
             ->join('countries', 'vehicle_type_rates.country_id', '=', 'countries.id')
             ->join('states', 'vehicle_type_rates.state_id', '=', 'states.id')
             ->join('cities', 'vehicle_type_rates.city_id', '=', 'cities.id')
             ->join('vehicle_types', 'vehicle_type_rates.vehicle_type_id', '=', 'vehicle_types.id')
             ->orderBy('id', 'desc');
+
+
+            if($country){
+                $query = $query->where('countries.name','LIKE',"%$country%");
+            }
+            if($state){
+                $query = $query->where('states.name','LIKE',"%$state%");
+            }
+            if($city){
+                $query = $query->where('cities.name','LIKE',"%$city%");
+            }
+
 
             $perPage = $request->query('per_page', 25);
             // $searchQuery = $request->query('search');

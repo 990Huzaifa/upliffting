@@ -26,6 +26,8 @@ return new class extends Migration
             $table->longText('pickup_location');
             $table->longText('pickup_lat');
             $table->longText('pickup_lng');
+            $table->boolean('is_pet')->default(false);
+            $table->boolean('is_shared')->default(false);
             $table->decimal('distance', 8, 2)->nullable();
             $table->bigInteger('duration')->nullable();  
             $table->decimal('base_fare', 8, 2);

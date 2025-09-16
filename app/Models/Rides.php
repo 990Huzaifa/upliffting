@@ -28,6 +28,7 @@ class Rides extends Model
         'promo_code_id',
         'reason',
         'cancelled_by',
+        'is_shared',
         'cancel_by_role'
     ];
 }

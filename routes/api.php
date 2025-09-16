@@ -210,8 +210,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
             
         });
 
-
-
         Route::controller(CustomerProfileController::class)->group(function () {
             Route::get('/profile', 'profile');
             Route::get('/about', 'about');
@@ -219,7 +217,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('/tnc', 'tnc');            
             Route::post('/contact', 'contactStore');            
         });
-
 
         Route::controller(CustomerPaymentMethodController::class)->group(function () {
             Route::get('/payment-methods', 'index');
@@ -232,25 +229,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::post('request-ride', 'store');
             Route::post('add-stop-request/{id}', 'addStopRequest');
             Route::post('cancel-ride/{id}', 'cancelRide');
+            Route::post('rate-ride/{id}', 'rateRide');
 
         });
 
-
-
-
-
         Route::get('vehicle-type', [VehicleTypeRateController::class, 'list2']);
-
-
-
-
-
-
-
-
         
     });
-    
-
     
 });

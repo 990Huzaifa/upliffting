@@ -290,4 +290,59 @@ class RideController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+    public function rateRide(Request $request, $id): JsonResponse
+    {
+        try {
+            $user = Auth::user();
+            $ride = Rides::findOrFail($id);
+            if ($ride->customer_id !== $user->id) {
+                throw new Exception('You are not authorized to rate this ride.', 403);
+            }
+
+            if ($ride->status !== 'completed') {
+                throw new Exception('You can only rate a completed ride.', 400);
+            }
+
+            $validator = Validator::make($request->all(), [
+                'rating' => 'required|integer|min:1|max:5',
+            ], [
+                'rating.required' => 'Rating is required.',
+                'rating.integer' => 'Rating must be an integer.',
+                'rating.min' => 'Rating must be at least 1.',
+                'rating.max' => 'Rating cannot exceed 5.',
+            ]);
+            if ($validator->fails())
+                throw new Exception($validator->errors()->first(), 401);
+
+            $ride->update([
+                'current_rating' => $request->rating,
+            ]);
+
+            // update rider overall rating
+            $rider = Rider::find($ride->rider_id);
+            if ($rider) {
+                $totalRatings = Rides::where('rider_id', $rider->id)
+                    ->where('status', 'completed')
+                    ->where('current_rating', '>', 0)
+                    ->count();
+
+                $sumRatings = Rides::where('rider_id', $rider->id)
+                    ->where('status', 'completed')
+                    ->where('current_rating', '>', 0)
+                    ->sum('current_rating');
+
+                $averageRating = $totalRatings > 0 ? round($sumRatings / $totalRatings, 2) : 0;
+
+                $rider->update(['overall_rating' => $averageRating]);
+            }
+
+            return response()->json(['message' => 'Ride rated successfully.'], 200);
+
+        } catch (QueryException $e) {
+            return response()->json(['DB error' => $e->getMessage()], 500);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
 }

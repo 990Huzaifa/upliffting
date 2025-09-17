@@ -351,7 +351,14 @@ class RideController extends Controller
         try{
             $user = Auth::user();
             $ride = Rides::where('customer_id', $user->id)->whereIn('status', ['finding', 'on a way', 'arrived', 'started'])->first();
-            return response()->json($ride, 200);
+            $riderData = User::select('id','first_name','last_name','avatar','phone','lat','lng')->where('id', $ride->rider_id)->first();
+            $rideDropOffs = RidesDropOff::where('ride_id', $ride->id)->get();
+            $data=[
+                'ride'=>$ride,
+                'ride_drop_offs'=> $rideDropOffs,
+                'rider'=>$riderData
+            ];
+            return response()->json($data, 200);
         }catch(Exception $e){
             return response()->json(['error' => $e->getMessage()], 500);
         }

@@ -14,15 +14,17 @@ class RideLocationUpdated implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-     public $rideId;
+    public $rideId;
     public $lat;
     public $lng;
+    public $status;
 
-    public function __construct($rideId, $lat, $lng)
+    public function __construct($rideId, $lat, $lng, $status)
     {
         $this->rideId = $rideId;
         $this->lat = $lat;
         $this->lng = $lng;
+        $this->status = $status;
     }
 
     /**
@@ -46,6 +48,7 @@ class RideLocationUpdated implements ShouldBroadcast
             'rideId' => $this->rideId,
             'lat' => $this->lat,
             'lng' => $this->lng,
+            'rideStatus' => $this->status
         ];
     }
 }

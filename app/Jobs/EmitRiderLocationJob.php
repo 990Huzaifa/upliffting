@@ -33,7 +33,7 @@ class EmitRiderLocationJob implements ShouldQueue
 
         if ($ride && $ride->status !== 'completed' && $ride->status !== 'cancelled') {
             // Broadcast rider's location
-            broadcast(new RideLocationUpdated($ride->id, $user->lat, $user->lng));
+            broadcast(new RideLocationUpdated($ride->id, $user->lat, $user->lng, $ride->status));
 
             // Dispatch the job again after 5 seconds if status is not completed or cancelled
             if ($ride->status !== 'completed' && $ride->status !== 'cancelled') {

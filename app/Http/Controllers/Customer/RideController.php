@@ -345,4 +345,13 @@ class RideController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+    public function requestRideInfo(): JsonResponse
+    {
+        try{
+            $user = Auth::user();
+            $ride = Rides::where('customer_id', $user->id)->whereIn('status', ['finding', 'on a way', 'arrived', 'started'])->first();
+            return response()->json($ride, 200);
+        }
+    }
 }

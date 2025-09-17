@@ -253,4 +253,13 @@ class RideController extends Controller
         }
 
     }
+
+    public function requestRideInfo(): JsonResponse
+    {
+        try{
+            $user = Auth::user();
+            $ride = Rides::where('rider_id', $user->id)->whereIn('status', ['finding', 'on a way', 'arrived', 'started'])->first();
+            return response()->json($ride, 200);
+        }
+    }
 }

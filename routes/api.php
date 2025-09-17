@@ -190,6 +190,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::post('accept-ride/{id}', 'acceptRide');
             Route::post('cancel-ride/{id}', 'cancelRide');
             Route::post('add-stop-request/{id}', 'addStopRequest');
+            Route::get('request-ride-info','requestRideInfo');
         });
 
         
@@ -230,6 +231,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::post('add-stop-request/{id}', 'addStopRequest');
             Route::post('cancel-ride/{id}', 'cancelRide');
             Route::post('rate-ride/{id}', 'rateRide');
+            Route::get('request-ride-info','requestRideInfo');
 
         });
 

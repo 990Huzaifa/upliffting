@@ -39,29 +39,17 @@ class VehicleTypeRateController extends Controller
             ->join('vehicle_types', 'vehicle_type_rates.vehicle_type_id', '=', 'vehicle_types.id')
             ->orderBy('id', 'desc');
 
-
-            if($country){
-                $query = $query->where('countries.name','LIKE',"%$country%");
-            }
-            if($state){
-                $query = $query->where('states.name','LIKE',"%$state%");
-            }
-            if($city){
-                $query = $query->where('cities.name','LIKE',"%$city%");
-            }
-
-
             $perPage = $request->query('per_page', 25);
-            // $searchQuery = $request->query('search');
+            $searchQuery = $request->query('search');
 
-            // if (!empty($searchQuery)) {
-            //     $vehicleTypeRateIds = VehicleTypeRate::Where('title', 'like', '%' . $searchQuery . '%')
-            //             ->pluck('id')
-            //             ->toArray();
-    
-            //         // Filter orders by the found Customers IDs
-            //         $query = $query->whereIn('id', $vehicleTypeRateIds);
-            // }
+            if ($searchQuery !== '') {
+                $query->where(function ($sub) use ($searchQuery) {
+                    $like = "%{$searchQuery}%";
+                    $sub->where('countries.name', 'LIKE', $like)
+                        ->orWhere('states.name', 'LIKE', $like)
+                        ->orWhere('cities.name', 'LIKE', $like);
+                });
+            }
             // Execute the query with pagination
             $data = $query->paginate($perPage);
 

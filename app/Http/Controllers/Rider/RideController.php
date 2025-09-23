@@ -11,6 +11,7 @@ use App\Models\Rides;
 use App\Models\RidesDropOff;
 use App\Models\User;
 use App\Models\Vehicle;
+use App\Models\VehicleTypeRate;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Exception;
@@ -42,6 +43,10 @@ class RideController extends Controller
                     break;
                 case 'started':
                     if ($ride->status != 'arrived')
+                        throw new Exception('Ride not available', 400);
+                    break;
+                case 'completed':
+                    if ($ride->status != 'started')
                         throw new Exception('Ride not available', 400);
                     break;
                 default:
@@ -91,7 +96,8 @@ class RideController extends Controller
                     $ride->id,
                     $data
                 ));
-
+                // update ride started at in UTC
+                $ride->update(['stated_at' => now('UTC')]);
                 EmitRiderLocationJob::dispatch($id, $user->id);
             } elseif ($status == 'arrived') {
                 
@@ -104,7 +110,7 @@ class RideController extends Controller
                     $ride->id,
                     $data
                 ));
-            }elseif ($status == 'started') {
+            } elseif ($status == 'started') {
                 $title = 'Ride Started!';
                 $firebase->sendToDevice(
                     'customer',$customer_fcm,$title,"Your ride has started now",['rideId' => $id,'status' => $status,]);
@@ -113,6 +119,18 @@ class RideController extends Controller
                     $ride->id,
                     $data
                 ));
+            } elseif ($status == 'completed') {
+                $title = 'Ride Completed!';
+                $firebase->sendToDevice(
+                    'customer',$customer_fcm,$title,"Your ride has been completed",['rideId' => $id,'status' => $status,]);
+                broadcast(new RideAccepted(
+                    $title,
+                    $ride->id,
+                    $data
+                ));
+                $ride->update(['completed_at' => now('UTC')]);
+                // we can dispatch a job to handle payment and wallet update
+
             }
 
             return response()->json(['message' => 'Ride updated successfully'], 200);
@@ -270,5 +288,34 @@ class RideController extends Controller
         }catch(Exception $e){
             return response()->json(['error' => $e->getMessage()], 500);
         }
+    }
+
+    private function calculateFinalFare($ride_id)
+    {
+        // Example fare calculation logic
+        $ride = Rides::find($ride_id);
+        $vtr = VehicleTypeRate::find($ride->vehicle_type_rate_id);
+
+        $perKmRate = $vtr->per_km_rate;
+        $perMinuteRate = $vtr->per_minute_rate;
+        // get time difference in minuts by stated_at to completed_at
+        //  --- IGNORE ---
+        $startTime = $ride->stated_at;
+        $endTime = $ride->completed_at;
+        $timeDiff_in_min = $endTime->diffInMinutes($startTime);
+
+        // check if the ride->duration(in minutes) is less than timeDiff_in_min then sum that extra time to timeDiff_in_min
+        $finalFare = $ride->base_fare;
+        if ($ride->duration < $timeDiff_in_min) {
+            $extra = $timeDiff_in_min - $ride->duration;
+            $timeDiff_in_min += $extra;
+            // calculate total fare
+            $finalFare = $ride->base_fare + ($perMinuteRate * $extra);
+        }
+        // adjust rate in the base fare by extra minuts 
+        
+        $ride->update([
+            'final_fare' => $finalFare,
+        ]);
     }
 }

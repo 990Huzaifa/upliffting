@@ -345,6 +345,7 @@ class AuthController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
     public function editProfile(Request $request): JsonResponse
     {
         try{
@@ -386,6 +387,7 @@ class AuthController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+    
     public function uploadProfilePicture(Request $request): JsonResponse
     {
         try{

@@ -29,6 +29,8 @@ class Rides extends Model
         'reason',
         'cancelled_by',
         'is_shared',
-        'cancel_by_role'
+        'cancel_by_role',
+        'stated_at',
+        'completed_at'
     ];
 }

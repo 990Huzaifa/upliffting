@@ -6,12 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Admin;
 use Exception;
 use Hash;
+use Illuminate\Http\Request;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Session;
 
 class AuthController extends Controller
 {

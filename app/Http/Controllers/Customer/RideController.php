@@ -291,6 +291,35 @@ class RideController extends Controller
         }
     }
 
+    public function requestRideInfo(): JsonResponse
+    {
+        try{
+            $user = Auth::user();
+            $ride = Rides::where('customer_id', $user->id)->whereIn('status', ['finding', 'on a way', 'arrived', 'started'])->first();
+            $riderData = User::select('id','first_name','last_name','avatar','phone','lat','lng')->where('id', $ride->rider_id)->first();
+            $rideDropOffs = RidesDropOff::where('ride_id', $ride->id)->get();
+            $data=[
+                'ride'=>$ride,
+                'ride_drop_offs'=> $rideDropOffs,
+                'rider'=>$riderData
+            ];
+            return response()->json($data, 200);
+        }catch(Exception $e){
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    // AFTER RIDE COMPLETED FUNCTIONS
+
+    // Step:1 make payment wit tip
+
+    public function makePayment(Request $request, $id)
+    {
+        
+    }
+
+    // Step:2 make rating
+
     public function rateRide(Request $request, $id): JsonResponse
     {
         try {
@@ -342,24 +371,6 @@ class RideController extends Controller
         } catch (QueryException $e) {
             return response()->json(['DB error' => $e->getMessage()], 500);
         } catch (Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
-    }
-
-    public function requestRideInfo(): JsonResponse
-    {
-        try{
-            $user = Auth::user();
-            $ride = Rides::where('customer_id', $user->id)->whereIn('status', ['finding', 'on a way', 'arrived', 'started'])->first();
-            $riderData = User::select('id','first_name','last_name','avatar','phone','lat','lng')->where('id', $ride->rider_id)->first();
-            $rideDropOffs = RidesDropOff::where('ride_id', $ride->id)->get();
-            $data=[
-                'ride'=>$ride,
-                'ride_drop_offs'=> $rideDropOffs,
-                'rider'=>$riderData
-            ];
-            return response()->json($data, 200);
-        }catch(Exception $e){
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }

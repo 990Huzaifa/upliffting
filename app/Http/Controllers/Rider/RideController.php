@@ -7,10 +7,13 @@ use App\Events\RideAccepted;
 use App\Events\RideCancelled;
 use App\Http\Controllers\Controller;
 use App\Jobs\HandleRiderResponseJob;
+use App\Models\Payment;
 use App\Models\Rides;
 use App\Models\RidesDropOff;
 use App\Models\User;
+use App\Models\UserAccount;
 use App\Models\Vehicle;
+use App\Models\VehicleType;
 use App\Models\VehicleTypeRate;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -120,17 +123,47 @@ class RideController extends Controller
                     $data
                 ));
             } elseif ($status == 'completed') {
+                // update ride
+                $ride->update([
+                    'completed_at' => now('UTC'),
+                    'status' => 'completed',
+                ]);
+                // calculate final fare
+                $this->calculateFinalFare($ride->id);
+                // make data to send
+                $payment_id = Payment::where('ride_id',$ride->id)->value('payment_method_id');
+                $customerAccount = UserAccount::find($payment_id);
+                $finalData = [
+                    'rideId' => $id,
+                    'status' => $status,
+                    'finalFare' => $ride->final_fare,
+                    'pickupLocation'=>$ride->pickup_location,
+                    'dropoffLocations'=> RidesDropOff::where('ride_id',$ride->id)->pluck('drop_location')->toArray(),
+                    'riderInfo'=>[
+                        'riderId' => $user->id,
+                        'riderName' => $user->first_name . ' ' . $user->last_name,
+                        'riderAvatar' => $user->avatar,
+                        'riderPhone' => $user->phone,
+                    ],
+                    'vehicleInfo' => [
+                        'id' => $vehicle->id,
+                        'type' => $this->getvehicleType($vehicle->vehicle_type_rate_id),
+                        'plateNumber' => $vehicle->registration_number,
+                    ],
+                    'customerCardInfo'=>[
+                        'customerCardId'=> $customerAccount->id,
+                        'customerCardNumber'=> '**** **** **** ' . substr($customerAccount->card_number, -4),
+                        'type'=>$customerAccount->type,
+                    ]
+                ];
                 $title = 'Ride Completed!';
                 $firebase->sendToDevice(
-                    'customer',$customer_fcm,$title,"Your ride has been completed",['rideId' => $id,'status' => $status,]);
+                    'customer',$customer_fcm,$title,"Make payment now",['rideId' => $id,'status' => $status,]);
                 broadcast(new RideAccepted(
                     $title,
                     $ride->id,
-                    $data
+                    $finalData
                 ));
-                $ride->update(['completed_at' => now('UTC')]);
-                // we can dispatch a job to handle payment and wallet update
-
             }
 
             return response()->json(['message' => 'Ride updated successfully'], 200);
@@ -317,5 +350,15 @@ class RideController extends Controller
         $ride->update([
             'final_fare' => $finalFare,
         ]);
+        return $ride;
+    }
+
+    private function getvehicleType($vehicle_type_rate_id)
+    {
+        $vtr = VehicleTypeRate::find($vehicle_type_rate_id);
+        $vehicle_type_id = $vtr->vehicle_type_id;
+        // get vehicle type name from vehicle_types table
+        $type = VehicleType::where('id', $vehicle_type_id)->value('title');
+        return $type;
     }
 }

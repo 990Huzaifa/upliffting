@@ -33,7 +33,7 @@ return new class extends Migration
             $table->decimal('base_fare', 8, 2);
             $table->decimal('discount_amount', 8, 2)->nullable();
             // pending(for schedule booking), finding, on a way, arrived, started, cancelled, completed
-            $table->enum('status', ['pending', 'finding', 'on a way', 'arrived', 'started', 'cancelled', 'completed'])->default('pending');
+            $table->enum('status', ['pending', 'finding', 'on a way', 'arrived', 'started', 'cancelled', 'completed','end trip'])->default('pending');
             $table->decimal('final_fare', 8, 2)->nullable();
             $table->longText('reason')->nullable();
             $table->enum('cancel_by_role', ['customer', 'rider'])->default('customer')->nullable();

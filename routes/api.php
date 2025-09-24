@@ -112,6 +112,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
             // start from here csc
             Route::get('countries', [VehicleTypeRateController::class, 'country'])->name('countries');
+            Route::get('currency', [VehicleTypeRateController::class, 'currency']);
             Route::get('states', [VehicleTypeRateController::class, 'state']);
             Route::get('states/{id}', [VehicleTypeRateController::class, 'statesByCountry']);
             Route::get('cities/{id}', [VehicleTypeRateController::class, 'cityByState']);
@@ -232,6 +233,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::post('cancel-ride/{id}', 'cancelRide');
             Route::post('rate-ride/{id}', 'rateRide');
             Route::get('request-ride-info','requestRideInfo');
+            Route::post('make-payment', 'makePayment');
 
         });
 

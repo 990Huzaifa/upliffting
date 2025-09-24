@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\City;
 use App\Models\Country;
+use App\Models\Currency;
 use App\Models\State;
 use App\Models\VehicleTypeRate;
 use Exception;
@@ -255,7 +256,13 @@ class VehicleTypeRateController extends Controller
     }
     public function city(): JsonResponse
     {
-        $data = city::all();
+        $data = City::all();
+        return response()->json($data,200);
+    }
+
+    public function currency(): JsonResponse
+    {
+        $data = Currency::all();
         return response()->json($data,200);
     }
 }

@@ -79,9 +79,7 @@ class RideController extends Controller
                 $surge_multiplier = getSurgeMultiplier($rate->id, $currentTime, $day, $ip);
 
                 // Fare formula
-                $actual_fare = ($rate->base_fare +
-                    ($distance_km * $rate->price_per_km) +
-                    ($time_min * $rate->price_per_min)) * $surge_multiplier;
+                $actual_fare = ($rate->base_fare + ($distance_km * $rate->price_per_km) + ($time_min * $rate->price_per_min)) * $surge_multiplier;
 
                 $fareList[] = [
                     'id' => $rate->id,
@@ -314,48 +312,58 @@ class RideController extends Controller
 
     // Step:1 make payment wit tip
 
-    public function makePayment(Request $request, $id): JsonResponse
+    public function makePayment(Request $request): JsonResponse
     {
         try {
             $user = Auth::user();
             $validator = Validator::make($request->all(), [
                 'ride_id' => 'required|exists:rides,id',
                 'payment_method_id' => 'required|exists:user_accounts,id',
-                'amount' => 'required|numeric|min:0',
+                'final_fare' => 'required|numeric|min:0',
                 'tip_amount' => 'required|numeric|min:0',
                 'tip_percentage' => 'nullable|numeric|min:0|max:100',
             ], [
+                'ride_id.required' => 'Ride ID is required.',
+                'ride_id.exists' => 'The specified ride does not exist.',
+                'payment_method_id.required' => 'Payment method is required.',
+                'payment_method_id.exists' => 'The specified payment method does not exist.',
+                'final_fare.required' => 'Final fare is required.',
+                'final_fare.numeric' => 'Final fare must be a number.',
+                'final_fare.min' => 'Final fare must be at least 0.',
                 'tip_amount.required' => 'Tip amount is required.',
                 'tip_amount.numeric' => 'Tip amount must be a number.',
                 'tip_amount.min' => 'Tip amount must be at least 0.',
+                'tip_percentage.numeric' => 'Tip percentage must be a number.',
+                'tip_percentage.min' => 'Tip percentage must be at least 0.',
+                'tip_percentage.max' => 'Tip percentage cannot exceed 100.',
             ]);
             if ($validator->fails()) throw new Exception($validator->errors()->first(), 400);
             // make transaction here with payment gateway
             // if success update payment and ride status and tip
 
-            $payment = Payment::where('ride_id', $id)->where('customer_id', $user->id)->firstOrFail();
+            $payment = Payment::where('ride_id', $request->ride_id)->where('customer_id', $user->id)->firstOrFail();
             if ($payment->status === 'completed') {
                 throw new Exception('This payment has already been completed.', 400);
             }
             $payment->update([
                 'payment_method_id' => $request->payment_method_id,
-                'amount' => $request->amount,
+                'amount' => $request->final_fare,
                 'status' => 'completed',
             ]);
             $tip = RiderTip::create([
-                'ride_id' => $id,
+                'ride_id' => $request->ride_id,
                 'customer_id' => $user->id,
                 'rider_id' => $payment->ride->rider_id,
                 'tip_amount' => $request->tip_amount,
                 'tip_percentage' => $request->tip_percentage ?? 0,
             ]);
-            $ride = Rides::findOrFail($id);
+            $ride = Rides::findOrFail($request->ride_id);
             // notify rider by fcm
-            $title = 'You received a tip of ' . ($tip->tip_percentage ? $tip->tip_percentage . '%' : '$' . $tip->tip_amount);
+            $title = 'Your payment is '.$request->final_fare. 'successful';
             $body = 'Thank you for your great service!';
             $firebaseService = new FirebaseService();
-
-            // $firebaseService->sendToDevice('rider',);
+            $rider_fcm = User::where('id', $ride->rider_id)->value('fcm_id');
+            $firebaseService->sendToDevice('rider', $rider_fcm, $title, $body);
 
             return response()->json(['message' => 'Payment and tip processed successfully.'], 200);
         } catch (QueryException $e) {

@@ -130,16 +130,16 @@ class RideController extends Controller
                     'status' => 'completed',
                 ]);
                 // calculate final fare
-                $this->calculateFinalFare($ride->id);
+                $updatedRide = $this->calculateFinalFare($ride->id);
                 // make data to send
                 $payment_id = Payment::where('ride_id',$ride->id)->value('payment_method_id');
                 $customerAccount = UserAccount::find($payment_id);
                 $finalData = [
                     'rideId' => $id,
                     'status' => $status,
-                    'finalFare' => $ride->final_fare,
-                    'pickupLocation'=>$ride->pickup_location,
-                    'dropoffLocations'=> RidesDropOff::where('ride_id',$ride->id)->pluck('drop_location')->toArray(),
+                    'finalFare' => $updatedRide->final_fare,
+                    'pickupLocation'=>$updatedRide->pickup_location,
+                    'dropoffLocations'=> RidesDropOff::where('ride_id',$updatedRide->id)->pluck('drop_location')->toArray(),
                     'riderInfo'=>[
                         'riderId' => $user->id,
                         'riderName' => $user->first_name . ' ' . $user->last_name,
@@ -159,7 +159,7 @@ class RideController extends Controller
                 ];
                 $title = 'Ride Completed!';
                 $firebase->sendToDevice(
-                    'customer',$customer_fcm,$title,"Make payment now",['rideId' => $id,'status' => $status,]);
+                    'customer',$customer_fcm,$title,"Make payment now",['rideId' => $updatedRide->id,'status' => $status,]);
                 broadcast(new RideAccepted(
                     $title,
                     $ride->id,

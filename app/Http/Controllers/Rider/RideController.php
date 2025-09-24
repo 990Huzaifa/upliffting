@@ -15,6 +15,7 @@ use App\Models\UserAccount;
 use App\Models\Vehicle;
 use App\Models\VehicleType;
 use App\Models\VehicleTypeRate;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Exception;
@@ -333,8 +334,8 @@ class RideController extends Controller
         $perMinuteRate = $vtr->per_minute_rate;
         // get time difference in minuts by stated_at to completed_at
         //  --- IGNORE ---
-        $startTime = $ride->stated_at;
-        $endTime = $ride->completed_at;
+        $startTime = Carbon::parse($ride->stated_at);
+        $endTime = Carbon::parse($ride->completed_at);
         $timeDiff_in_min = $endTime->diffInMinutes($startTime);
 
         // check if the ride->duration(in minutes) is less than timeDiff_in_min then sum that extra time to timeDiff_in_min

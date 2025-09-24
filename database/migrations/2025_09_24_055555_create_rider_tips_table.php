@@ -15,10 +15,12 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('ride_id');
             $table->unsignedBigInteger('rider_id');
+            $table->unsignedBigInteger('customer_id');
             $table->decimal('percent', 5, 2)->nullable();
             $table->decimal('amount', 8, 2);
             $table->foreign('ride_id')->references('id')->on('rides')->onUpdate('cascade')->onDelete('cascade');
             $table->foreign('rider_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
+            $table->foreign('customer_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
         });
     }

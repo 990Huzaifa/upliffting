@@ -11,6 +11,7 @@ class RiderTip extends Model
 
     protected $fillable = [
         'ride_id',
+        'customer_id',
         'rider_id',
         'percent',
         'amount',

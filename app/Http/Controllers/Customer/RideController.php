@@ -9,6 +9,7 @@ use App\Jobs\SearchNearbyRidersJob;
 use App\Models\Payment;
 use App\Models\PromoCode;
 use App\Models\Rider;
+use App\Models\RiderTip;
 use App\Models\Rides;
 use App\Models\RidesDropOff;
 use App\Models\User;
@@ -313,9 +314,55 @@ class RideController extends Controller
 
     // Step:1 make payment wit tip
 
-    public function makePayment(Request $request, $id)
+    public function makePayment(Request $request, $id): JsonResponse
     {
-        
+        try {
+            $user = Auth::user();
+            $validator = Validator::make($request->all(), [
+                'ride_id' => 'required|exists:rides,id',
+                'payment_method_id' => 'required|exists:user_accounts,id',
+                'amount' => 'required|numeric|min:0',
+                'tip_amount' => 'required|numeric|min:0',
+                'tip_percentage' => 'nullable|numeric|min:0|max:100',
+            ], [
+                'tip_amount.required' => 'Tip amount is required.',
+                'tip_amount.numeric' => 'Tip amount must be a number.',
+                'tip_amount.min' => 'Tip amount must be at least 0.',
+            ]);
+            if ($validator->fails()) throw new Exception($validator->errors()->first(), 400);
+            // make transaction here with payment gateway
+            // if success update payment and ride status and tip
+
+            $payment = Payment::where('ride_id', $id)->where('customer_id', $user->id)->firstOrFail();
+            if ($payment->status === 'completed') {
+                throw new Exception('This payment has already been completed.', 400);
+            }
+            $payment->update([
+                'payment_method_id' => $request->payment_method_id,
+                'amount' => $request->amount,
+                'status' => 'completed',
+            ]);
+            $tip = RiderTip::create([
+                'ride_id' => $id,
+                'customer_id' => $user->id,
+                'rider_id' => $payment->ride->rider_id,
+                'tip_amount' => $request->tip_amount,
+                'tip_percentage' => $request->tip_percentage ?? 0,
+            ]);
+            $ride = Rides::findOrFail($id);
+            // notify rider by fcm
+            $title = 'You received a tip of ' . ($tip->tip_percentage ? $tip->tip_percentage . '%' : '$' . $tip->tip_amount);
+            $body = 'Thank you for your great service!';
+            $firebaseService = new FirebaseService();
+
+            // $firebaseService->sendToDevice('rider',);
+
+            return response()->json(['message' => 'Payment and tip processed successfully.'], 200);
+        } catch (QueryException $e) {
+            return response()->json(['DB error' => $e->getMessage()], 500);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     // Step:2 make rating

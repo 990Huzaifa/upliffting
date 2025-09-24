@@ -336,20 +336,19 @@ class RideController extends Controller
         //  --- IGNORE ---
         $startTime = Carbon::parse($ride->stated_at);
         $endTime = Carbon::parse($ride->completed_at);
-        $timeDiff_in_min = $endTime->diffInMinutes($startTime);
+        $actualMinutes  = $endTime->diffInMinutes($startTime);
 
-        // check if the ride->duration(in minutes) is less than timeDiff_in_min then sum that extra time to timeDiff_in_min
+        // check if the ride->duration(in minutes) is less than actualMinutes  then sum that extra time to actualMinutes 
         $finalFare = $ride->base_fare;
-        if ($ride->duration < $timeDiff_in_min) {
-            $extra = $timeDiff_in_min - $ride->duration;
-            $timeDiff_in_min += $extra;
+        if ($ride->duration < $actualMinutes ) {
+            $extraMinutes = $actualMinutes  - $ride->duration;
             // calculate total fare
-            $finalFare = $ride->base_fare + ($perMinuteRate * $extra);
+            $finalFare = $ride->base_fare + ($perMinuteRate * $extraMinutes);
         }
-        // adjust rate in the base fare by extra minuts 
+        // adjust rate in the base fare by extraMinutes 
         
         $ride->update([
-            'final_fare' => $finalFare,
+            'final_fare' => round($finalFare, 2),
         ]);
         return $ride;
     }

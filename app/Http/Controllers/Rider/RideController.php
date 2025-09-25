@@ -74,6 +74,10 @@ class RideController extends Controller
                 'status' => $status,
                 'vehicle_id' => $vehicle->id,
             ]);
+            // update payment data
+            Payment::where('ride_id', $ride->id)->update([
+                'rider_id' => $user->id,
+            ]);
 
             // fire event
 

@@ -355,8 +355,8 @@ class RideController extends Controller
                 'ride_id' => $request->ride_id,
                 'customer_id' => $user->id,
                 'rider_id' => $payment->rider_id,
-                'tip_amount' => $request->tip_amount,
-                'tip_percentage' => $request->tip_percentage ?? 0,
+                'amount' => $request->tip_amount,
+                'percentage' => $request->tip_percentage ?? 0,
             ]);
             $ride = Rides::findOrFail($request->ride_id);
             // notify rider by fcm

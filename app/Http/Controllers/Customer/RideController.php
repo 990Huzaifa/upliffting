@@ -390,7 +390,7 @@ class RideController extends Controller
             }
 
             $validator = Validator::make($request->all(), [
-                'rating' => 'required|integer|min:1|max:5',
+                'rating' => 'required|integer|max:5',
                 'review' => 'nullable|string|max:1000',
             ], [
                 'rating.required' => 'Rating is required.',

@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Jobs\SearchNearbyRidersJob;
 use App\Models\Payment;
 use App\Models\PromoCode;
+use App\Models\RatingReview;
 use App\Models\Rider;
 use App\Models\RiderTip;
 use App\Models\Rides;
@@ -353,7 +354,7 @@ class RideController extends Controller
             $tip = RiderTip::create([
                 'ride_id' => $request->ride_id,
                 'customer_id' => $user->id,
-                'rider_id' => $payment->ride->rider_id,
+                'rider_id' => $payment->rider_id,
                 'tip_amount' => $request->tip_amount,
                 'tip_percentage' => $request->tip_percentage ?? 0,
             ]);
@@ -390,35 +391,44 @@ class RideController extends Controller
 
             $validator = Validator::make($request->all(), [
                 'rating' => 'required|integer|min:1|max:5',
+                'review' => 'nullable|string|max:1000',
             ], [
                 'rating.required' => 'Rating is required.',
                 'rating.integer' => 'Rating must be an integer.',
                 'rating.min' => 'Rating must be at least 1.',
                 'rating.max' => 'Rating cannot exceed 5.',
+                'review.string' => 'Review must be a string.',
+                'review.max' => 'Review cannot exceed 1000 characters.',
             ]);
             if ($validator->fails())
                 throw new Exception($validator->errors()->first(), 401);
 
-            $ride->update([
-                'current_rating' => $request->rating,
+            // create rating review entry
+            RatingReview::create([
+                'ride_id' => $ride->id,
+                'customer_id' => $user->id,
+                'rider_id' => $ride->rider_id,
+                'rating' => $request->rating,
+                'send_by' => 'customer_to_rider',
+                'review' => $request->review ?? null,
             ]);
 
             // update rider overall rating
             $rider = Rider::find($ride->rider_id);
             if ($rider) {
-                $totalRatings = Rides::where('rider_id', $rider->id)
-                    ->where('status', 'completed')
-                    ->where('current_rating', '>', 0)
+                $totalRiderRatings = RatingReview::where('rider_id', $ride->rider_id)
+                    ->where('send_by', 'customer_to_rider')
+                    ->where('rating', '>', 0)
                     ->count();
 
-                $sumRatings = Rides::where('rider_id', $rider->id)
-                    ->where('status', 'completed')
-                    ->where('current_rating', '>', 0)
-                    ->sum('current_rating');
+                $sumRiderRatings = RatingReview::where('rider_id', $ride->rider_id)
+                    ->where('send_by', 'customer_to_rider')
+                    ->where('rating', '>', 0)
+                    ->sum('rating');
 
-                $averageRating = $totalRatings > 0 ? round($sumRatings / $totalRatings, 2) : 0;
+                $averageRating = $totalRiderRatings > 0 ? round($sumRiderRatings / $totalRiderRatings, 2) : 0;
 
-                $rider->update(['overall_rating' => $averageRating]);
+                $rider->update(['current_rating' => $averageRating]);
             }
 
             return response()->json(['message' => 'Ride rated successfully.'], 200);

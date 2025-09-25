@@ -7,7 +7,9 @@ use App\Events\RideAccepted;
 use App\Events\RideCancelled;
 use App\Http\Controllers\Controller;
 use App\Jobs\HandleRiderResponseJob;
+use App\Models\Customer;
 use App\Models\Payment;
+use App\Models\RatingReview;
 use App\Models\Rides;
 use App\Models\RidesDropOff;
 use App\Models\User;
@@ -360,5 +362,69 @@ class RideController extends Controller
         // get vehicle type name from vehicle_types table
         $type = VehicleType::where('id', $vehicle_type_id)->value('title');
         return $type;
+    }
+
+    public function rateRide(Request $request, $id): JsonResponse
+    {
+        try {
+            $user = Auth::user();
+            $ride = Rides::findOrFail($id);
+            if ($ride->customer_id !== $user->id) {
+                throw new Exception('You are not authorized to rate this ride.', 403);
+            }
+
+            if ($ride->status !== 'completed') {
+                throw new Exception('You can only rate a completed ride.', 400);
+            }
+
+            $validator = Validator::make($request->all(), [
+                'rating' => 'required|integer|min:1|max:5',
+                'review' => 'nullable|string|max:1000',
+            ], [
+                'rating.required' => 'Rating is required.',
+                'rating.integer' => 'Rating must be an integer.',
+                'rating.min' => 'Rating must be at least 1.',
+                'rating.max' => 'Rating cannot exceed 5.',
+                'review.string' => 'Review must be a string.',
+                'review.max' => 'Review cannot exceed 1000 characters.',
+            ]);
+            if ($validator->fails())
+                throw new Exception($validator->errors()->first(), 401);
+
+            // create rating review entry
+            RatingReview::create([
+                'ride_id' => $ride->id,
+                'customer_id' => $ride->customer_id,
+                'rider_id' => $user->id,
+                'rating' => $request->rating,
+                'send_by' => 'rider_to_customer',
+                'review' => $request->review ?? null,
+            ]);
+
+            // update rider overall rating
+            $customer = Customer::find($ride->rider_id);
+            if ($customer) {
+                $totalRiderRatings = RatingReview::where('customer_id', $ride->customer_id)
+                    ->where('send_by', 'rider_to_customer')
+                    ->where('rating', '>', 0)
+                    ->count();
+
+                $sumRiderRatings = RatingReview::where('rider_id', $ride->customer_id)
+                    ->where('send_by', 'rider_to_customer')
+                    ->where('rating', '>', 0)
+                    ->sum('rating');
+
+                $averageRating = $totalRiderRatings > 0 ? round($sumRiderRatings / $totalRiderRatings, 2) : 0;
+
+                $customer->update(['current_rating' => $averageRating]);
+            }
+
+            return response()->json(['message' => 'Ride rated successfully.'], 200);
+
+        } catch (QueryException $e) {
+            return response()->json(['DB error' => $e->getMessage()], 500);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 }

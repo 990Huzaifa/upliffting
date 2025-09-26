@@ -15,6 +15,8 @@ use App\Models\Rides;
 use App\Models\RidesDropOff;
 use App\Models\User;
 use App\Models\UserAccount;
+use App\Models\Vehicle;
+use App\Models\VehicleType;
 use App\Models\VehicleTypeRate;
 use App\Services\FirebaseService;
 use Illuminate\Support\Facades\Auth;
@@ -298,10 +300,14 @@ class RideController extends Controller
             $ride = Rides::where('customer_id', $user->id)->whereIn('status', ['finding', 'on a way', 'arrived', 'started'])->first();
             $riderData = User::select('id','first_name','last_name','avatar','phone','lat','lng')->where('id', $ride->rider_id)->first();
             $rideDropOffs = RidesDropOff::where('ride_id', $ride->id)->get();
+            $plate_no = Vehicle::where('id', $ride->vehicle_id)->value('registration_number');
+            $vehicle_type = $this->getvehicleType($ride->vehicle_type_rate_id);
             $data=[
                 'ride'=>$ride,
                 'ride_drop_offs'=> $rideDropOffs,
-                'rider'=>$riderData
+                'rider'=>$riderData,
+                'plate_no'=>$plate_no,
+                'vehicle_type'=>$vehicle_type,
             ];
             return response()->json($data, 200);
         }catch(Exception $e){
@@ -438,5 +444,14 @@ class RideController extends Controller
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
+    }
+
+    private function getvehicleType($vehicle_type_rate_id)
+    {
+        $vtr = VehicleTypeRate::find($vehicle_type_rate_id);
+        $vehicle_type_id = $vtr->vehicle_type_id;
+        // get vehicle type name from vehicle_types table
+        $type = VehicleType::where('id', $vehicle_type_id)->value('title');
+        return $type;
     }
 }

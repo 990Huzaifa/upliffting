@@ -319,10 +319,14 @@ class RideController extends Controller
             $ride = Rides::where('rider_id', $user->id)->whereIn('status', ['finding', 'on a way', 'arrived', 'started'])->first();
             $customerData = User::select('id','first_name','last_name','avatar','phone','lat','lng')->where('id', $ride->customer_id)->first();
             $rideDropOffs = RidesDropOff::where('ride_id', $ride->id)->get();
+            $plate_no = Vehicle::where('id', $ride->vehicle_id)->value('registration_number');
+            $vehicle_type = $this->getvehicleType($ride->vehicle_type_rate_id);
             $data=[
                 'ride'=>$ride,
                 'ride_drop_offs'=>$rideDropOffs,
-                'customer'=>$customerData
+                'customer'=>$customerData,
+                'plate_no'=>$plate_no,
+                'vehicle_type'=>$vehicle_type,
             ];
             return response()->json($data, 200);
         }catch(Exception $e){

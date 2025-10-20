@@ -33,6 +33,3 @@ jobs:
         exclude: |
           vendor/*
           public/*
-        clean: false
-        force: false
-        verbose: true

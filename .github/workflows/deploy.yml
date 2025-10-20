@@ -29,7 +29,7 @@ jobs:
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
         # 👇 This is the remote folder you want to deploy into
-        server-dir: ./
+        server-dir: html/
         exclude: |
           vendor/*
           public/*

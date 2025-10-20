@@ -11,6 +11,8 @@ class Rider extends Model
 
     protected $fillable = [
         'user_id',
+        'stripe_account_id',
+        'is_stripe_verified',
         'license_number',
         'license_expiry',
         'driving_experience',

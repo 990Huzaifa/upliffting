@@ -86,27 +86,20 @@ class ProfileController extends Controller
             $user = Auth::user();
             DB::beginTransaction();
             $validator = Validator::make($request->all(), [
-                'card_holder_name' => 'required',
+                'stripe_payment_method_id' => 'required',
                 'card_number' => 'required|numeric',
-                'expiry_date' => 'required',
-                'cvv' => 'required|numeric',
             ], [
-                'card_holder_name.required' => 'Card holder name is required',
+                'stripe_payment_method_id.required' => 'Stripe payment method ID is required',
                 'card_number.required' => 'Card number is required',
                 'card_number.numeric' => 'Card number must be numeric',
-                'expiry_date.required' => 'Expiry date is required',
-                'cvv.required' => 'CVV is required',
-                'cvv.numeric' => 'CVV must be numeric',
             ]);
 
             if ($validator->fails()) throw new Exception($validator->errors()->first(), 400);
 
             UserAccount::create([
                 'user_id' => $user->id,
-                'card_holder_name' => $request->card_holder_name,
                 'card_number' => $request->card_number,
-                'expiry_date' => $request->expiry_date,
-                'cvv' => $request->cvv
+                'stripe_payment_method_id' => $request->stripe_payment_method_id,
             ]);
 
             DB::commit();

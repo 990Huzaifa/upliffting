@@ -11,11 +11,8 @@ class UserAccount extends Model
 
     protected $fillable = [
         'user_id',
-        'card_holder_name',
+        'stripe_payment_method_id',
         'card_number',
-        'expiry_date',
-        'type',
-        'cvv',
         'is_default',
     ];
 }

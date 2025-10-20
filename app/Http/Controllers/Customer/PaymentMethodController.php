@@ -44,11 +44,8 @@ class PaymentMethodController extends Controller
         try{
             $user = Auth::user();
             $validator = Validator::make($request->all(), [
-                'card_holder_name' => 'required|string|max:255',
+                'stripe_payment_method_id' => 'required',
                 'card_number' => 'required|string|max:16',
-                'expiry_date' => 'required|date_format:m/y',
-                'cvv' => 'required|string|max:4',
-                'type' => 'required|in:debit,credit',
             ]);
 
             if ($validator->fails()) {
@@ -66,12 +63,8 @@ class PaymentMethodController extends Controller
 
             $userAccount = UserAccount::create([
                 'user_id' => $user->id,
-                'card_holder_name' => $request->card_holder_name,
-                'card_number' => $request->card_number,
-                'expiry_date' => $request->expiry_date,
-                'cvv' => $request->cvv,
-                'is_default' => $default,
-                'type' => $request->type,
+                'stripe_payment_method_id' => $request->stripe_payment_method_id,
+                'card_number' =>  $request->card_number
             ]);
 
             return response()->json($userAccount, 201);

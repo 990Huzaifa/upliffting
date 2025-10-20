@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
+            $table->longText('stripe_account_id')->nullable();
+            $table->boolean('is_stripe_verified')->default(0);
             $table->longText('license_number')->nullable();
             $table->date('license_expiry')->nullable();
             $table->longText('license_photo')->nullable();

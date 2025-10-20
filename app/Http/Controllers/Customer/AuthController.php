@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\OTPMail;
 use App\Mail\VerifyAccountMail;
 use App\Models\Customer;
+use App\Services\StripeService;
 use DB;
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -103,8 +104,18 @@ class AuthController extends Controller
 
             ]);
 
+            // create in strip
+            $strip = new StripeService();
+            $stripCustomerId = $strip->createCustomer(
+                $customer->first_name . ' ' . $customer->last_name,
+                $customer->email,
+                $customer->phone
+            );
+
+            
             Customer::create([
-                'user_id' => $customer->id
+                'user_id' => $customer->id,
+                'stripe_customer_id' => $stripCustomerId,
             ]);
 
             Mail::to($request->email)->send(new VerifyAccountMail([

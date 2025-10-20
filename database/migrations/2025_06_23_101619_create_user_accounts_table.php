@@ -15,11 +15,8 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
-            $table->string('card_holder_name');
+            $table->longText('stripe_payment_method_id');
             $table->string('card_number');
-            $table->string('expiry_date');
-            $table->string('cvv');
-            $table->enum('type',['debit','credit'])->default('debit'); // Added type field to store card type (e.g., Visa, MasterCard)
             $table->boolean('is_default')->default(false);
             $table->timestamps();
         });

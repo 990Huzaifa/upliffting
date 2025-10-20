@@ -29,7 +29,10 @@ jobs:
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
         # 👇 This is the remote folder you want to deploy into
-        #server-dir: /api.upliffting.com/
+        server-dir: /var/www/html/
         exclude: |
           vendor/*
           public/*
+        clean: false
+        force: false
+        verbose: true

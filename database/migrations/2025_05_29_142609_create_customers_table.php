@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
+            $table->longText('stripe_customer_id')->nullable();
             $table->integer('current_rating')->default(0);
             $table->bigInteger('total_rides')->default(0);
             $table->timestamps();

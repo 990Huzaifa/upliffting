@@ -129,7 +129,7 @@ class AuthController extends Controller
             //     );
             myMailSend($rider->email,
                 $rider->first_name . ' ' . $rider->last_name,
-                'Otp Verification',
+                'Otp Verification Mail',
                 'Hi ' . $rider->first_name . ' ' . $rider->last_name . ', This is your one time password: ' . $token
             );
             DB::commit();
@@ -367,8 +367,8 @@ class AuthController extends Controller
             //     'is_url' => false
             // ]));
             myMailSend($rider->email,
-                'Verify your account',
-                'Otp Verification',
+                $rider->first_name . ' ' . $rider->last_name,
+                'Otp Verification Mail',
                 'Hi ' . $rider->first_name . ' ' . $rider->last_name . ', This is your one time password: ' . $token
             );
             return response()->json([
@@ -488,7 +488,7 @@ class AuthController extends Controller
                 // ]));
                 myMailSend($rider->email,
                     $rider->first_name . ' ' . $rider->last_name,
-                    'Otp Verification',
+                    'Otp Verification Mail',
                     'Hi ' . $rider->first_name . ' ' . $rider->last_name . ', This is your one time password: ' . $token
                 );
             }

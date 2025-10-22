@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\UserAccount;
 use App\Models\UserBank;
 use App\Models\Vehicle;
+use App\Services\StripeService;
 use Exception;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
@@ -330,4 +331,53 @@ class ProfileController extends Controller
         }
     }
 
+
+
+    // strip function for rider
+
+
+    public function stripeOnboardingLink(Request $request): JsonResponse
+    {
+        try{
+            $user = Auth::user();
+            $stripAcoountId = Rider::where('user_id',$user->id)->value('stripe_account_id');
+
+            $stripeService = new StripeService();
+            $link = $stripeService->createOnboardingLink($stripAcoountId);
+            return response()->json(['onboarding_link' => $link], 200);
+        }catch(Exception $e){
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function refreshOnboardingLink(Request $request, $riderAccountId): JsonResponse
+    {
+        try{
+            $stripeService = new StripeService();
+            $link = $stripeService->createOnboardingLink($riderAccountId);
+            return response()->json(['onboarding_link' => $link], 200);
+        }catch(Exception $e){
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function successOnboardingLink(Request $request, $riderAccountId): JsonResponse
+    {
+        try{
+            $user = Auth::user();
+            $stripAcoountId = Rider::where('user_id',$user->id)->value('stripe_account_id');
+
+            $stripeService = new StripeService();
+
+            $accountStatus = $stripeService->retrieveAccount($stripAcoountId);
+            if($accountStatus['success'] == true){
+                Rider::where('user_id', $user->id)->update([
+                    'is_stripe_verified' => $accountStatus['is_verified']
+                ]);
+            }
+            return response()->json(['message' => 'Onboarding completed successfully'], 200);
+        }catch(Exception $e){
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
 }

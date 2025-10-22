@@ -12,7 +12,8 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\Customer\PaymentMethodController as CustomerPaymentMethodController;
 use App\Http\Controllers\Customer\RideController as CustomerRideController;
 use App\Http\Controllers\Rider\RideController as RiderRideController;
-use App\Http\Controllers\Rider\StripeWebhookController;
+use App\Http\Controllers\Rider\StripeConnectController;
+use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\Rider\VehicleController as RiderVehicleController;
 use App\Http\Controllers\Rider\VehicleInspectionController;
 use Illuminate\Http\Request;
@@ -68,6 +69,8 @@ Broadcast::routes(['middleware' => ['auth:api']]);
 
 // webhook
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handle']);
+
+
 
 
 Route::middleware(['auth:sanctum'])->group(function () {
@@ -171,6 +174,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::controller(RiderProfileController::class)->group(function () {
             Route::get('/profile', 'profile');
             Route::post('/edit-profile', 'editProfile');
+
+            // strip apis
+            Route::get('/stripe/onboarding-link', 'stripeOnboardingLink');
+            Route::get('/stripe/onboarding/refresh/{riderAccountId}', 'refreshOnboardingLink');
+            Route::get('/stripe/onboarding/success/{riderAccountId}', 'successOnboardingLink');
+
+
             Route::post('/add-card', 'addCard');
             Route::post('/add-bank', 'addBank');
             Route::post('/add-ss-number', 'addSSN');
@@ -185,7 +195,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::post('/update-lat-long', 'updateLatLong');
         });
 
-        Route::get('check-stripe-status/{accountId}', [StripeWebhookController::class, 'checkStripeStatus']);
 
         // vehicle apis
         Route::get('vehicle-type', [VehicleTypeRateController::class, 'list1']);

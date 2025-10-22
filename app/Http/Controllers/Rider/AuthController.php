@@ -10,6 +10,7 @@ use App\Models\Rider;
 use App\Models\UserBank;
 use App\Models\Vehicle;
 use App\Models\VehicleInspection;
+use App\Services\StripeService;
 use DB;
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -103,9 +104,13 @@ class AuthController extends Controller
                 'avatar' => $avatar,
                 'remember_token' => $token,
             ]);
-
+            $stripeService = new StripeService();
+            $stripeAccountId = $stripeService->createConnectedAccount(
+                $rider->email,
+            );
             Rider::create([
-                'user_id' => $rider->id
+                'user_id' => $rider->id,
+                'stripe_account_id' => $stripeAccountId,
             ]);
             // Mail::to($request->email)->send(new VerifyAccountMail([
             //     'message' => 'Hi ' . $rider->first_name . $rider->last_name . ', This is your one time password',

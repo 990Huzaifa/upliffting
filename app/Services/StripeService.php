@@ -43,7 +43,7 @@ class StripeService
             'application_fee_amount' => $commission, // tumhara commission (in cents)
         ]);
 
-        return $paymentIntent;
+            return $paymentIntent;
         } catch (ApiErrorException $e) {
             return [
                 'success' => false,
@@ -132,6 +132,10 @@ class StripeService
         }
     }
 
+
+
+    // rider connected account methods
+    
     public function  createConnectedAccount(string $email,string $type = 'express')
     {
         try {
@@ -149,13 +153,13 @@ class StripeService
         }
     }
 
-    public function createOnboardingLink(string $accountId, string $refreshUrl, string $returnUrl)
+    public function createOnboardingLink(string $accountId)
     {
         try {
             $link = AccountLink::create([
                 'account' => $accountId,
-                'refresh_url' => $refreshUrl,
-                'return_url' => $returnUrl,
+                'refresh_url' => env('APP_URL').'/api/stripe/onboarding/refresh/{riderAccountId}',
+                'return_url' => env('APP_URL').'/api/stripe/onboarding/success/{riderAccountId}',
                 'type' => 'account_onboarding',
             ]);
 

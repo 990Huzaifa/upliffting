@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Uplifting'),
+    'name' => env('APP_NAME', 'Upliffting'),
 
     /*
     |--------------------------------------------------------------------------
@@ -54,7 +54,7 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost'),
+    'url' => env('APP_URL', 'https://api.upliffting.com'),
 
     'asset_url' => env('ASSET_URL', '/'),
 

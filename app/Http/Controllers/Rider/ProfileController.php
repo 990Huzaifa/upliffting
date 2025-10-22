@@ -350,9 +350,11 @@ class ProfileController extends Controller
         }
     }
 
-    public function refreshOnboardingLink(Request $request, $riderAccountId): JsonResponse
+    public function refreshOnboardingLink(Request $request): JsonResponse
     {
         try{
+            $user = Auth::user();
+            $riderAccountId = Rider::where('user_id',$user->id)->value('stripe_account_id');
             $stripeService = new StripeService();
             $link = $stripeService->createOnboardingLink($riderAccountId);
             return response()->json(['onboarding_link' => $link], 200);
@@ -361,7 +363,7 @@ class ProfileController extends Controller
         }
     }
 
-    public function successOnboardingLink(Request $request, $riderAccountId): JsonResponse
+    public function successOnboardingLink(Request $request): JsonResponse
     {
         try{
             $user = Auth::user();

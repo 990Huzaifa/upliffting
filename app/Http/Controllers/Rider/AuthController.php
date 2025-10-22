@@ -128,7 +128,7 @@ class AuthController extends Controller
             //         ]
             //     );
             myMailSend($rider->email,
-                'Verify your account',
+                $rider->first_name . ' ' . $rider->last_name,
                 'Otp Verification',
                 'Hi ' . $rider->first_name . ' ' . $rider->last_name . ', This is your one time password: ' . $token
             );
@@ -470,9 +470,9 @@ class AuthController extends Controller
                 //     'otp' => $token
                 // ]));
                 myMailSend($rider->email,
-                    'Verify your account',
-                    'Otp Verification',
-                    'Hi ' . $rider->first_name . ' ' . $rider->last_name . ', This is your one time password: ' . $token
+                $rider->first_name . ' ' . $rider->last_name,
+                'Verify your account',
+                'Hi ' . $rider->first_name . ' ' . $rider->last_name . ', This is your one time password: ' . $token,
                 );
 
             } else if ($request->type == 'email-verify') {
@@ -487,7 +487,7 @@ class AuthController extends Controller
                 //     'is_url' => false
                 // ]));
                 myMailSend($rider->email,
-                    'Verify your account',
+                    $rider->first_name . ' ' . $rider->last_name,
                     'Otp Verification',
                     'Hi ' . $rider->first_name . ' ' . $rider->last_name . ', This is your one time password: ' . $token
                 );

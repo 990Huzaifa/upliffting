@@ -124,8 +124,8 @@ class AuthController extends Controller
             //     'is_url'=>false
             // ]));
             myMailSend($customer->email,
-                'Verify your account',
-                'Otp Verification',
+                $customer->first_name . ' ' . $customer->last_name,
+                'Otp Verification Mail',
                 'Hi ' . $customer->first_name . ' ' . $customer->last_name . ', This is your one time password: ' . $token
             );
             DB::commit();
@@ -251,8 +251,8 @@ class AuthController extends Controller
             //     'otp' => $token
             // ]));
             myMailSend($customer->email,
-                    'Verify your account',
-                    'Otp Verification',
+                    $customer->first_name . ' ' . $customer->last_name,
+                    'Otp Verification Mail',
                     'Hi ' . $customer->first_name . ' ' . $customer->last_name . ', This is your one time password: ' . $token
                 );
             return response()->json([
@@ -471,8 +471,8 @@ class AuthController extends Controller
                 //     'otp' => $token
                 // ]));
                 myMailSend($customer->email,
-                    'Verify your account',
-                    'Otp Verification',
+                    $customer->first_name . ' ' . $customer->last_name,
+                    'Otp Verification Mail',
                     'Hi ' . $customer->first_name . ' ' . $customer->last_name . ', This is your one time password: ' . $token
                 );
                 
@@ -487,8 +487,8 @@ class AuthController extends Controller
                 //     'is_url'=>false
                 // ]));
                 myMailSend($customer->email,
-                    'Verify your account',
-                    'Otp Verification',
+                    $customer->first_name . ' ' . $customer->last_name,
+                    'Otp Verification Mail',
                     'Hi ' . $customer->first_name . ' ' . $customer->last_name . ', This is your one time password: ' . $token
                 );
             }

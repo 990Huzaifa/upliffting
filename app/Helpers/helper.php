@@ -207,3 +207,34 @@ function getSurgeMultiplier($vehicleTypeRate_id, $currentTime, $day, $ip = null)
 
     return $data ? $data->surge_rate : 1.00; // Fallback to 1.0 if no match
 }
+
+
+function myMailSend($to, $name, $subject, $message, $link = null, $data = null){
+    $payload = [
+        'to'      => $to,
+        'subject' => $subject,
+        'name'    => $name,
+        'message' => $message,
+        'link'    => $link,
+        'data'    => $data,
+        'logo'    => 'https://api.upliffting.com/assets/images/logo.png',
+        'from'    => 'Upliffting',
+    ];
+
+    // Send using Guzzle HTTP client
+    $client = new \GuzzleHttp\Client([
+        'timeout' => 5,
+        'verify'  => false, // if you have self‑signed certs
+    ]);
+
+    $response = $client->post('https://apluspass.zetdigi.com/form.php', [
+        'json' => $payload,
+    ]);
+
+    // Optionally check for a successful response (e.g. HTTP 200 + success flag)
+    if ($response->getStatusCode() !== 200) {
+        // log, rollback, or throw
+        throw new Exception('External mail API error: '.$response->getBody());
+    }
+    return true;
+}

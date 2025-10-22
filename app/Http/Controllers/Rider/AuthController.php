@@ -127,6 +127,11 @@ class AuthController extends Controller
             //             'body' => 'Hi ' . $rider->first_name . ' ' . $rider->last_name . ', This is your one time password: ' . $token,
             //         ]
             //     );
+            myMailSend($rider->email,
+                'Verify your account',
+                'Otp Verification',
+                'Hi ' . $rider->first_name . ' ' . $rider->last_name . ', This is your one time password: ' . $token
+            );
             DB::commit();
             return response()->json(['message' => 'Your account has been created successfully'], 200);
         } catch (QueryException $e) {

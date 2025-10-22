@@ -107,21 +107,21 @@ class AuthController extends Controller
             Rider::create([
                 'user_id' => $rider->id
             ]);
-            Mail::to($request->email)->send(new VerifyAccountMail([
-                'message' => 'Hi ' . $rider->first_name . $rider->last_name . ', This is your one time password',
-                'otp' => $token,
-                'is_url' => false
-            ]));
+            // Mail::to($request->email)->send(new VerifyAccountMail([
+            //     'message' => 'Hi ' . $rider->first_name . $rider->last_name . ', This is your one time password',
+            //     'otp' => $token,
+            //     'is_url' => false
+            // ]));
             
             // send sms
-            $twilio = new Client('AC04a583acff979b22bbba421f6fc8b51b', config('services.twilio.auth_token'));
-                $message = $twilio->messages->create(
-                    $request->phone,
-                    [
-                        'from' => config('services.twilio.phone_number'),
-                        'body' => 'Hi ' . $rider->first_name . ' ' . $rider->last_name . ', This is your one time password: ' . $token,
-                    ]
-                );
+            // $twilio = new Client('AC04a583acff979b22bbba421f6fc8b51b', config('services.twilio.auth_token'));
+            //     $message = $twilio->messages->create(
+            //         $request->phone,
+            //         [
+            //             'from' => config('services.twilio.phone_number'),
+            //             'body' => 'Hi ' . $rider->first_name . ' ' . $rider->last_name . ', This is your one time password: ' . $token,
+            //         ]
+            //     );
             DB::commit();
             return response()->json(['message' => 'Your account has been created successfully'], 200);
         } catch (QueryException $e) {

@@ -113,12 +113,7 @@ class AuthController extends Controller
                 'user_id' => $rider->id,
                 'stripe_account_id' => $stripeAccountId,
             ]);
-            // Mail::to($request->email)->send(new VerifyAccountMail([
-            //     'message' => 'Hi ' . $rider->first_name . $rider->last_name . ', This is your one time password',
-            //     'otp' => $token,
-            //     'is_url' => false
-            // ]));
-            
+
             // send sms
             // $twilio = new Client('AC04a583acff979b22bbba421f6fc8b51b', config('services.twilio.auth_token'));
             //     $message = $twilio->messages->create(
@@ -128,11 +123,7 @@ class AuthController extends Controller
             //             'body' => 'Hi ' . $rider->first_name . ' ' . $rider->last_name . ', This is your one time password: ' . $token,
             //         ]
             //     );
-            // myMailSend($rider->email,
-            //     $rider->first_name . ' ' . $rider->last_name,
-            //     'Otp Verification Mail',
-            //     'Hi ' . $rider->first_name . ' ' . $rider->last_name . ', This is your one time password: ' . $token
-            // );
+
 
             Resend::emails()->send([
                     'to'      => $rider->email,
@@ -373,16 +364,16 @@ class AuthController extends Controller
 
             $rider = User::where('email', $request->email)->where('role', 'rider')->first();
 
-            // Mail::to($request->email)->send(new OTPMail([
-            //     'message' => 'Hi ' . $user->first_name . $user->last_name . 'This is your one time password',
-            //     'otp' => $token,
-            //     'is_url' => false
-            // ]));
-            myMailSend($rider->email,
-                $rider->first_name . ' ' . $rider->last_name,
-                'Otp Verification Mail',
-                'Hi ' . $rider->first_name . ' ' . $rider->last_name . ', This is your one time password: ' . $token
-            );
+            Resend::emails()->send([
+                    'to'      => $rider->email,
+                    'from'    => 'info@upliffting.com',
+                    'subject' => 'Reset Your Password',
+                    'html' => (new VerifyAccountMail([
+                        'message' => 'Hi ' . $rider->first_name . $rider->last_name . ', This is your one time password',
+                        'otp' => $token,
+                        'is_url' => false
+                    ]))->render(),
+                ]);
             return response()->json([
                 'message' => 'Reset OTP sent successfully',
             ], 200);
@@ -477,15 +468,16 @@ class AuthController extends Controller
                     'role' => 'rider',
                     'created_at' => now()
                 ]);
-                // Mail::to($request->email)->send(new OTPMail([
-                //     'message' => 'Hi ' . $rider->first_name . $rider->last_name . ', This is your one time password',
-                //     'otp' => $token
-                // ]));
-                myMailSend($rider->email,
-                $rider->first_name . ' ' . $rider->last_name,
-                'Verify your account',
-                'Hi ' . $rider->first_name . ' ' . $rider->last_name . ', This is your one time password: ' . $token,
-                );
+                Resend::emails()->send([
+                    'to'      => $rider->email,
+                    'from'    => 'info@upliffting.com',
+                    'subject' => 'Reset Your Password',
+                    'html' => (new VerifyAccountMail([
+                        'message' => 'Hi ' . $rider->first_name . $rider->last_name . ', This is your one time password',
+                        'otp' => $token,
+                        'is_url' => false
+                    ]))->render(),
+                ]);
 
             } else if ($request->type == 'email-verify') {
                 if ($rider->email_verified_at != null)
@@ -493,16 +485,17 @@ class AuthController extends Controller
                 $rider->update([
                     'remember_token' => $token
                 ]);
-                // Mail::to($request->email)->send(new VerifyAccountMail([
-                //     'message' => 'Hi ' . $rider->first_name . $rider->last_name . ', This is your one time password',
-                //     'otp' => $token,
-                //     'is_url' => false
-                // ]));
-                myMailSend($rider->email,
-                    $rider->first_name . ' ' . $rider->last_name,
-                    'Otp Verification Mail',
-                    'Hi ' . $rider->first_name . ' ' . $rider->last_name . ', This is your one time password: ' . $token
-                );
+                
+                Resend::emails()->send([
+                    'to'      => $rider->email,
+                    'from'    => 'info@upliffting.com',
+                    'subject' => 'Email Verification',
+                    'html' => (new VerifyAccountMail([
+                        'message' => 'Hi ' . $rider->first_name . $rider->last_name . ', This is your one time password',
+                        'otp' => $token,
+                        'is_url' => false
+                    ]))->render(),
+                ]);
             }
 
             return response()->json(['token' => $token], 200);

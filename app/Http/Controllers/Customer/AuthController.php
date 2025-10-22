@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use App\Models\PasswordResetToken;
+use Resend\Laravel\Facades\Resend;
 
 class AuthController extends Controller
 {
@@ -118,16 +119,16 @@ class AuthController extends Controller
                 'stripe_customer_id' => $stripCustomerId,
             ]);
 
-            // Mail::to($request->email)->send(new VerifyAccountMail([
-            //     'message' => 'Hi '.$customer->first_name. $customer->last_name.', This is your one time password',
-            //     'otp' => $token,
-            //     'is_url'=>false
-            // ]));
-            myMailSend($customer->email,
-                $customer->first_name . ' ' . $customer->last_name,
-                'Otp Verification Mail',
-                'Hi ' . $customer->first_name . ' ' . $customer->last_name . ', This is your one time password: ' . $token
-            );
+            Resend::emails()->send([
+                    'to'      => $customer->email,
+                    'from'    => 'info@upliffting.com',
+                    'subject' => 'Email Verification',
+                    'html' => (new VerifyAccountMail([
+                        'message' => 'Hi ' . $customer->first_name . $customer->last_name . ', This is your one time password',
+                        'otp' => $token,
+                        'is_url' => false
+                    ]))->render(),
+                ]);
             DB::commit();
             return response()->json(['message' => 'Your account has been created successfully'], 200);
         }catch(QueryException $e){
@@ -246,15 +247,16 @@ class AuthController extends Controller
 
             $customer = User::where('email', $request->email)->where('role', 'customer')->first();
 
-            // Mail::to($request->email)->send(new OTPMail([
-            //     'message' => 'Hi '.$user->first_name. $user->last_name.', This is your one time password',
-            //     'otp' => $token
-            // ]));
-            myMailSend($customer->email,
-                    $customer->first_name . ' ' . $customer->last_name,
-                    'Otp Verification Mail',
-                    'Hi ' . $customer->first_name . ' ' . $customer->last_name . ', This is your one time password: ' . $token
-                );
+            Resend::emails()->send([
+                    'to'      => $customer->email,
+                    'from'    => 'info@upliffting.com',
+                    'subject' => 'Reset Your Password',
+                    'html' => (new VerifyAccountMail([
+                        'message' => 'Hi ' . $customer->first_name . $customer->last_name . ', This is your one time password',
+                        'otp' => $token,
+                        'is_url' => false
+                    ]))->render(),
+                ]);
             return response()->json([
                 'message' => 'Reset OTP sent successfully',
             ], 200);
@@ -466,31 +468,32 @@ class AuthController extends Controller
                     'role' => 'customer',
                     'created_at' => now()
                 ]);
-                // Mail::to($request->email)->send(new OTPMail([
-                //     'message' => 'Hi '.$customer->first_name. $customer->last_name.', This is your one time password',
-                //     'otp' => $token
-                // ]));
-                myMailSend($customer->email,
-                    $customer->first_name . ' ' . $customer->last_name,
-                    'Otp Verification Mail',
-                    'Hi ' . $customer->first_name . ' ' . $customer->last_name . ', This is your one time password: ' . $token
-                );
+                Resend::emails()->send([
+                    'to'      => $customer->email,
+                    'from'    => 'info@upliffting.com',
+                    'subject' => 'Reset Your Password',
+                    'html' => (new VerifyAccountMail([
+                        'message' => 'Hi ' . $customer->first_name . $customer->last_name . ', This is your one time password',
+                        'otp' => $token,
+                        'is_url' => false
+                    ]))->render(),
+                ]);
                 
             }else if($request->type == 'email-verify'){
                 if($customer->email_verified_at != null)throw new Exception('Email already verified');
                 $customer->update([
                     'remember_token' => $token
                 ]);
-                // Mail::to($request->email)->send(new VerifyAccountMail([
-                //     'message' => 'Hi '.$customer->first_name. $customer->last_name.', This is your one time password',
-                //     'otp' => $token,
-                //     'is_url'=>false
-                // ]));
-                myMailSend($customer->email,
-                    $customer->first_name . ' ' . $customer->last_name,
-                    'Otp Verification Mail',
-                    'Hi ' . $customer->first_name . ' ' . $customer->last_name . ', This is your one time password: ' . $token
-                );
+                Resend::emails()->send([
+                    'to'      => $customer->email,
+                    'from'    => 'info@upliffting.com',
+                    'subject' => 'Email Verification',
+                    'html' => (new VerifyAccountMail([
+                        'message' => 'Hi ' . $customer->first_name . $customer->last_name . ', This is your one time password',
+                        'otp' => $token,
+                        'is_url' => false
+                    ]))->render(),
+                ]);
             }
             
             return response()->json(['token' => $token], 200);

@@ -223,7 +223,7 @@ function myMailSend($to, $name, $subject, $message, $link = null, $data = null){
 
     // Send using Guzzle HTTP client
     $client = new \GuzzleHttp\Client([
-        'timeout' => 5,
+        'timeout' => 10,
         'verify'  => false, // if you have self‑signed certs
     ]);
 

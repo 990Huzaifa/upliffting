@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Models\Customer;
 use App\Models\UserAccount;
+use App\Services\StripeService;
 use Illuminate\Http\Request;
 use Exception;
 use Illuminate\Database\QueryException;
@@ -35,13 +37,25 @@ class PaymentMethodController extends Controller
         }
     }
 
+    // STRIP APIS
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request): JsonResponse
+    public function setupIntent(Request $request): JsonResponse
     {
-        try{
+        try {
+            $user = Auth::user();
+            $customerId = Customer::where('user_id', $user->id)->value('stripe_customer_id');
+            $stripeService = new StripeService();
+            $clientSecret = $stripeService->steupIntent($customerId);
+
+            return response()->json(['client_secret' => $clientSecret], 200);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function attachPaymentMethod(Request $request): JsonResponse
+    {
+        try {
             $user = Auth::user();
             $validator = Validator::make($request->all(), [
                 'stripe_payment_method_id' => 'required',
@@ -51,34 +65,30 @@ class PaymentMethodController extends Controller
             if ($validator->fails()) {
                 throw new Exception($validator->errors()->first(), 422);
             }
-            $default = 1;
-            // Check if the user already has a default payment method
-            $existingDefault = UserAccount::where('user_id', $user->id)
-                ->where('is_default', true)
-                ->first();
+            $customerId = Customer::where('user_id', $user->id)->value('stripe_customer_id');
+            
+            $paymentMethodId = $request->input('stripe_payment_method_id');
+            $stripeService = new StripeService();
+            $result = $stripeService->attachPaymentMethodToCustomer($customerId, $paymentMethodId);
 
-            if ($existingDefault) {
-                $default = 0; // If a default exists, set the new one as not default
+            if ($result['success']) {
+
+                UserAccount::create([
+                    'user_id' => $user->id,
+                    'stripe_payment_method_id' => $paymentMethodId,
+                    'card_number' => '**** **** **** ' . substr($request->input('card_number'), -4),
+                    'is_default' => true,
+                ]);
+
+                return response()->json(['message' => $result['message']], 200);
+            } else {
+                return response()->json(['error' => $result['error']], 500);
             }
-
-            $userAccount = UserAccount::create([
-                'user_id' => $user->id,
-                'stripe_payment_method_id' => $request->stripe_payment_method_id,
-                'card_number' =>  $request->card_number
-            ]);
-
-            return response()->json($userAccount, 201);
-        } catch (QueryException $e) {
-            return response()->json(['DB error' => $e->getMessage()], 500);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
-        
     }
-
-    /**
-     * Display the specified resource.
-     */
+    
     public function switchAccount(string $id): JsonResponse
     {
         try{
@@ -88,11 +98,17 @@ class PaymentMethodController extends Controller
                 ->firstOrFail();
 
             if($userAccount->is_default) throw new Exception('This payment method is already set as default.', 400);
-            // first make all other payment methods not default
-            $userAccounts = UserAccount::where('user_id', $user->id)->update(['is_default' => false]);
             // then set the selected payment method as default
             if (!$userAccount) throw new Exception('Payment method not found.', 404);
-
+            
+            $customerId = Customer::where('user_id', $user->id)->value('stripe_customer_id');
+            // strip side start
+            $stripeService = new StripeService();
+            $stripeService->setDefaultPaymentMethod(
+                $customerId,
+                $userAccount->stripe_payment_method_id
+            );
+            // stripe side end
             UserAccount::where('user_id', $user->id)->update(['is_default' => false]);
             $userAccount->update(['is_default' => true]);
 
@@ -103,7 +119,4 @@ class PaymentMethodController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-
-
-
 }

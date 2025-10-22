@@ -60,5 +60,13 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
+    public function Customer()
+    {
+        return $this->hasOne(Customer::class, 'user_id', 'id');
+    }
 
+    public function Rider()
+    {
+        return $this->hasOne(Rider::class, 'user_id', 'id');
+    }
 }

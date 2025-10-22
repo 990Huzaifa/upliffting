@@ -24,7 +24,7 @@ return new class extends Migration
             $table->bigInteger('driving_experience')->nullable();
             $table->integer('current_rating')->default(0);
             $table->boolean('background_verfied')->default(0);
-            $table->enum('is_online', ['online', 'offline'])->default('offline');
+            $table->enum('online_status', ['online', 'offline'])->default('offline');
             $table->timestamps();
         });
     }

@@ -367,11 +367,11 @@ class ProfileController extends Controller
     {
         try{
             $user = Auth::user();
-            $stripAcoountId = Rider::where('user_id',$user->id)->value('stripe_account_id');
+            $riderAccountId = Rider::where('user_id',$user->id)->value('stripe_account_id');
 
             $stripeService = new StripeService();
 
-            $accountStatus = $stripeService->retrieveAccount($stripAcoountId);
+            $accountStatus = $stripeService->retrieveAccount($riderAccountId);
             if($accountStatus['success'] == true){
                 Rider::where('user_id', $user->id)->update([
                     'is_stripe_verified' => $accountStatus['is_verified']

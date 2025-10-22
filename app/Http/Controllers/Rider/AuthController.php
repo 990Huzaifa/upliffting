@@ -136,7 +136,7 @@ class AuthController extends Controller
 
             Resend::emails()->send([
                     'to'      => $rider->email,
-                    'from'    => 'developer@upliffting.net',
+                    'from'    => 'info@upliffting.com',
                     'subject' => 'Email Verification',
                     'html' => (new VerifyAccountMail([
                         'message' => 'Hi ' . $rider->first_name . $rider->last_name . ', This is your one time password',

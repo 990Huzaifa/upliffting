@@ -118,11 +118,16 @@ class AuthController extends Controller
                 'stripe_customer_id' => $stripCustomerId,
             ]);
 
-            Mail::to($request->email)->send(new VerifyAccountMail([
-                'message' => 'Hi '.$customer->first_name. $customer->last_name.', This is your one time password',
-                'otp' => $token,
-                'is_url'=>false
-            ]));
+            // Mail::to($request->email)->send(new VerifyAccountMail([
+            //     'message' => 'Hi '.$customer->first_name. $customer->last_name.', This is your one time password',
+            //     'otp' => $token,
+            //     'is_url'=>false
+            // ]));
+            myMailSend($customer->email,
+                'Verify your account',
+                'Otp Verification',
+                'Hi ' . $customer->first_name . ' ' . $customer->last_name . ', This is your one time password: ' . $token
+            );
             DB::commit();
             return response()->json(['message' => 'Your account has been created successfully'], 200);
         }catch(QueryException $e){
@@ -239,12 +244,17 @@ class AuthController extends Controller
                 'created_at' => now()
             ]);
 
-            $user = User::where('email', $request->email)->where('role', 'customer')->first();
+            $customer = User::where('email', $request->email)->where('role', 'customer')->first();
 
-            Mail::to($request->email)->send(new OTPMail([
-                'message' => 'Hi '.$user->first_name. $user->last_name.', This is your one time password',
-                'otp' => $token
-            ]));
+            // Mail::to($request->email)->send(new OTPMail([
+            //     'message' => 'Hi '.$user->first_name. $user->last_name.', This is your one time password',
+            //     'otp' => $token
+            // ]));
+            myMailSend($customer->email,
+                    'Verify your account',
+                    'Otp Verification',
+                    'Hi ' . $customer->first_name . ' ' . $customer->last_name . ', This is your one time password: ' . $token
+                );
             return response()->json([
                 'message' => 'Reset OTP sent successfully',
             ], 200);
@@ -456,21 +466,31 @@ class AuthController extends Controller
                     'role' => 'customer',
                     'created_at' => now()
                 ]);
-                Mail::to($request->email)->send(new OTPMail([
-                    'message' => 'Hi '.$customer->first_name. $customer->last_name.', This is your one time password',
-                    'otp' => $token
-                ]));
+                // Mail::to($request->email)->send(new OTPMail([
+                //     'message' => 'Hi '.$customer->first_name. $customer->last_name.', This is your one time password',
+                //     'otp' => $token
+                // ]));
+                myMailSend($customer->email,
+                    'Verify your account',
+                    'Otp Verification',
+                    'Hi ' . $customer->first_name . ' ' . $customer->last_name . ', This is your one time password: ' . $token
+                );
                 
             }else if($request->type == 'email-verify'){
                 if($customer->email_verified_at != null)throw new Exception('Email already verified');
                 $customer->update([
                     'remember_token' => $token
                 ]);
-                Mail::to($request->email)->send(new VerifyAccountMail([
-                    'message' => 'Hi '.$customer->first_name. $customer->last_name.', This is your one time password',
-                    'otp' => $token,
-                    'is_url'=>false
-                ]));
+                // Mail::to($request->email)->send(new VerifyAccountMail([
+                //     'message' => 'Hi '.$customer->first_name. $customer->last_name.', This is your one time password',
+                //     'otp' => $token,
+                //     'is_url'=>false
+                // ]));
+                myMailSend($customer->email,
+                    'Verify your account',
+                    'Otp Verification',
+                    'Hi ' . $customer->first_name . ' ' . $customer->last_name . ', This is your one time password: ' . $token
+                );
             }
             
             return response()->json(['token' => $token], 200);

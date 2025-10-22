@@ -359,13 +359,18 @@ class AuthController extends Controller
                 'created_at' => now()
             ]);
 
-            $user = User::where('email', $request->email)->where('role', 'rider')->first();
+            $rider = User::where('email', $request->email)->where('role', 'rider')->first();
 
-            Mail::to($request->email)->send(new OTPMail([
-                'message' => 'Hi ' . $user->first_name . $user->last_name . 'This is your one time password',
-                'otp' => $token,
-                'is_url' => false
-            ]));
+            // Mail::to($request->email)->send(new OTPMail([
+            //     'message' => 'Hi ' . $user->first_name . $user->last_name . 'This is your one time password',
+            //     'otp' => $token,
+            //     'is_url' => false
+            // ]));
+            myMailSend($rider->email,
+                'Verify your account',
+                'Otp Verification',
+                'Hi ' . $rider->first_name . ' ' . $rider->last_name . ', This is your one time password: ' . $token
+            );
             return response()->json([
                 'message' => 'Reset OTP sent successfully',
             ], 200);
@@ -460,10 +465,15 @@ class AuthController extends Controller
                     'role' => 'rider',
                     'created_at' => now()
                 ]);
-                Mail::to($request->email)->send(new OTPMail([
-                    'message' => 'Hi ' . $rider->first_name . $rider->last_name . ', This is your one time password',
-                    'otp' => $token
-                ]));
+                // Mail::to($request->email)->send(new OTPMail([
+                //     'message' => 'Hi ' . $rider->first_name . $rider->last_name . ', This is your one time password',
+                //     'otp' => $token
+                // ]));
+                myMailSend($rider->email,
+                    'Verify your account',
+                    'Otp Verification',
+                    'Hi ' . $rider->first_name . ' ' . $rider->last_name . ', This is your one time password: ' . $token
+                );
 
             } else if ($request->type == 'email-verify') {
                 if ($rider->email_verified_at != null)
@@ -471,11 +481,16 @@ class AuthController extends Controller
                 $rider->update([
                     'remember_token' => $token
                 ]);
-                Mail::to($request->email)->send(new VerifyAccountMail([
-                    'message' => 'Hi ' . $rider->first_name . $rider->last_name . ', This is your one time password',
-                    'otp' => $token,
-                    'is_url' => false
-                ]));
+                // Mail::to($request->email)->send(new VerifyAccountMail([
+                //     'message' => 'Hi ' . $rider->first_name . $rider->last_name . ', This is your one time password',
+                //     'otp' => $token,
+                //     'is_url' => false
+                // ]));
+                myMailSend($rider->email,
+                    'Verify your account',
+                    'Otp Verification',
+                    'Hi ' . $rider->first_name . ' ' . $rider->last_name . ', This is your one time password: ' . $token
+                );
             }
 
             return response()->json(['token' => $token], 200);

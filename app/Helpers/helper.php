@@ -211,14 +211,14 @@ function getSurgeMultiplier($vehicleTypeRate_id, $currentTime, $day, $ip = null)
 
 function myMailSend($to, $name, $subject, $message, $link = null, $data = null){
     $payload = [
-        'to'      => $to,
-        'subject' => $subject,
-        'name'    => $name,
-        'message' => $message,
-        'link'    => $link,
-        'data'    => $data,
-        'logo'    => 'https://api.upliffting.com/assets/images/logo.png',
-        'from'    => 'Upliffting',
+        "to"      => $to,
+        "subject" => $subject,
+        "name"    => $name,
+        "message" => $message,
+        "link"    => $link,
+        "data"    => $data,
+        "logo"    => 'https://api.upliffting.com/assets/images/logo.png',
+        "from"    => 'Upliffting',
     ];
 
     // Send using Guzzle HTTP client

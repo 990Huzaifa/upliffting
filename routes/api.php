@@ -238,7 +238,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         Route::controller(CustomerPaymentMethodController::class)->group(function () {
             Route::get('/payment-methods', 'index');
-            Route::post('/payment-methods/setup', 'setupIntent');
+            Route::get('/payment-methods/setup', 'setupIntent');
             Route::post('/payment-methods', 'attachPaymentMethod');
             Route::get('/payment-methods/switch/{id}', 'switchAccount');
         });

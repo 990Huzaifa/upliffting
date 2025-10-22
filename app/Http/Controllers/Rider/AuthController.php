@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Twilio\Rest\Client;
+use Resend\Laravel\Facades\Resend;
 
 class AuthController extends Controller
 {
@@ -127,11 +128,22 @@ class AuthController extends Controller
             //             'body' => 'Hi ' . $rider->first_name . ' ' . $rider->last_name . ', This is your one time password: ' . $token,
             //         ]
             //     );
-            myMailSend($rider->email,
-                $rider->first_name . ' ' . $rider->last_name,
-                'Otp Verification Mail',
-                'Hi ' . $rider->first_name . ' ' . $rider->last_name . ', This is your one time password: ' . $token
-            );
+            // myMailSend($rider->email,
+            //     $rider->first_name . ' ' . $rider->last_name,
+            //     'Otp Verification Mail',
+            //     'Hi ' . $rider->first_name . ' ' . $rider->last_name . ', This is your one time password: ' . $token
+            // );
+
+            Resend::emails()->send([
+                    'to'      => $rider->email,
+                    'from'    => 'developer@upliffting.net',
+                    'subject' => 'Email Verification',
+                    'html' => (new VerifyAccountMail([
+                        'message' => 'Hi ' . $rider->first_name . $rider->last_name . ', This is your one time password',
+                        'otp' => $token,
+                        'is_url' => false
+                    ]))->render(),
+                ]);
             DB::commit();
             return response()->json(['message' => 'Your account has been created successfully'], 200);
         } catch (QueryException $e) {

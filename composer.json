@@ -13,6 +13,7 @@
         "laravel/tinker": "^2.8",
         "predis/predis": "^3.2",
         "pusher/pusher-php-server": "^7.2",
+        "resend/resend-laravel": "^0.23.0",
         "stripe/stripe-php": "^17.6",
         "symfony/intl": "^7.3",
         "twilio/sdk": "^8.7"

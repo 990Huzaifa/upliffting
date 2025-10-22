@@ -50,11 +50,10 @@ class StripeWebhookController extends Controller
 
                 if ($rider) {
                     $rider->update([
-                        'charges_enabled' => $account->charges_enabled,
-                        'payouts_enabled' => $account->payouts_enabled,
+                        'is_stripe_verified' => 1
                     ]);
 
-                    Log::info("Rider {$rider->id} Stripe account updated successfully.");
+                    Log::info("Rider {$rider->id} Stripe account verified successfully.");
                 } else {
                     Log::warning("No rider found for Stripe account: {$account->id}");
                 }

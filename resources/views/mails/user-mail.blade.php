@@ -231,7 +231,7 @@
         /* <CHANGE> Modern footer with gradient accent */
         .footer {
             background: linear-gradient(to right, #f8f9fb 0%, #f0f2f5 100%);
-            padding: 35px 30px;
+            padding: 15px 30px;
             text-align: center;
             border-top: 2px solid #e9ecef;
         }

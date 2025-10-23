@@ -72,12 +72,17 @@ class PaymentMethodController extends Controller
             $result = $stripeService->attachPaymentMethodToCustomer($customerId, $paymentMethodId);
 
             $cardDetails = $stripeService->getCardDetails($paymentMethodId);
-            Log::info('Card Details: ', (array)$cardDetails);
+            // Log::info('Card Details: ', (array)$cardDetails);
             if ($result['success']) {
+
+                // set other payment methods to is_default false
+                UserAccount::where('user_id', $user->id)->update(['is_default' => false]);
 
                 UserAccount::create([
                     'user_id' => $user->id,
                     'stripe_payment_method_id' => $paymentMethodId,
+                    'card_number' => '**** **** **** ' . $cardDetails['card']->last4,
+                    'brand' => $cardDetails['card']->brand,
                     'is_default' => true,
                 ]);
 

@@ -13,6 +13,7 @@ class UserAccount extends Model
         'user_id',
         'stripe_payment_method_id',
         'card_number',
+        'brand',
         'is_default',
     ];
 }

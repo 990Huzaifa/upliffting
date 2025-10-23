@@ -16,6 +16,8 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
             $table->longText('stripe_payment_method_id');
+            $table->longText('card_number');
+            $table->longText('brand');
             $table->boolean('is_default')->default(false);
             $table->timestamps();
         });

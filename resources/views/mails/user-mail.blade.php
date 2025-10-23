@@ -3,21 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
-</head>
-<body>
-    <p>{{$data['message']}}</p><br>
-    <p>{{$data['otp']}}</p>
-</body>
-</html>
-
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verify Your Email - OTP</title>
     <style>
         * {
@@ -27,218 +12,307 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-            background-color: #f5f5f5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             line-height: 1.6;
-            color: #333;
+            color: #2c3e50;
+            padding: 20px;
         }
 
         .email-container {
             max-width: 600px;
             margin: 0 auto;
-            background-color: #ffffff;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(to bottom, #ffffff 0%, #f8f9fb 100%);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
         }
 
-        .header {
-            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
-            padding: 40px 20px;
+        /* <CHANGE> Vibrant gradient header with white logo area */
+        .header-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 50px 30px;
             text-align: center;
-            border-bottom: 4px solid #0ea5e9;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-gradient::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        /* <CHANGE> White background section for PNG logo */
+        .logo-section {
+            background-color: #ffffff;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
         }
 
         .logo {
-            width: 50px;
-            height: 50px;
-            background-color: #0ea5e9;
-            border-radius: 50%;
-            margin: 0 auto 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: white;
-            font-size: 24px;
+            max-width: 100px;
+            height: auto;
+            margin: 0 auto;
         }
 
-        .header h1 {
+        .logo img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* <CHANGE> Modern header with gradient text effect */
+        .header-content {
+            position: relative;
+            z-index: 1;
             color: #ffffff;
-            font-size: 28px;
+        }
+
+        .header-content h1 {
+            font-size: 32px;
             font-weight: 700;
             margin-bottom: 8px;
             letter-spacing: -0.5px;
         }
 
-        .header p {
-            color: #e0e7ff;
-            font-size: 14px;
-            font-weight: 500;
+        .header-content p {
+            font-size: 15px;
+            font-weight: 400;
+            opacity: 0.95;
         }
 
         .content {
-            padding: 40px 30px;
+            padding: 45px 35px;
         }
 
         .greeting {
             font-size: 16px;
-            color: #1f2937;
-            margin-bottom: 20px;
-            font-weight: 500;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-weight: 600;
         }
 
         .message {
             font-size: 15px;
-            color: #4b5563;
+            color: #555;
             line-height: 1.8;
-            margin-bottom: 30px;
+            margin-bottom: 35px;
         }
 
-        .message p {
-            margin-bottom: 15px;
-        }
-
-        /* <CHANGE> OTP code section - prominent display */
+        /* <CHANGE> Eye-catching OTP display with gradient background and shadow */
         .otp-section {
-            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-            padding: 35px;
-            border-radius: 8px;
-            margin: 35px 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 50px 40px;
+            border-radius: 12px;
+            margin: 40px 0;
             text-align: center;
-            border: 2px solid #0ea5e9;
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .otp-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 250px;
+            height: 250px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
         }
 
         .otp-label {
             font-size: 12px;
-            color: #0c4a6e;
+            color: rgba(255, 255, 255, 0.85);
             text-transform: uppercase;
-            letter-spacing: 1.5px;
-            margin-bottom: 15px;
-            font-weight: 700;
+            letter-spacing: 2px;
+            margin-bottom: 18px;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
         }
 
         .otp-code {
             font-family: 'Courier New', monospace;
-            font-size: 36px;
-            font-weight: 900;
-            color: #1e3a8a;
+            font-size: 48px;
+            font-weight: 800;
+            color: #ffffff;
             letter-spacing: 8px;
             word-break: break-all;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            font-kerning: none;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
 
         .otp-expiry {
             font-size: 13px;
-            color: #0c4a6e;
+            color: rgba(255, 255, 255, 0.8);
             font-weight: 500;
+            position: relative;
+            z-index: 1;
         }
 
-        .highlight {
-            background-color: #fef3c7;
-            padding: 15px;
-            border-left: 4px solid #f59e0b;
-            border-radius: 4px;
-            margin: 25px 0;
+        /* <CHANGE> Modern info boxes with accent colors */
+        .info-box {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+            padding: 20px;
+            border-left: 5px solid #667eea;
+            border-radius: 8px;
+            margin: 30px 0;
             font-size: 14px;
-            color: #92400e;
+            color: #2c3e50;
+            line-height: 1.8;
+        }
+
+        .info-box strong {
+            color: #667eea;
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
         }
 
         .instructions {
-            background-color: #f3f4f6;
-            padding: 20px;
-            border-radius: 6px;
-            margin: 25px 0;
+            background: #f8f9fb;
+            padding: 24px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            margin: 30px 0;
             font-size: 14px;
-            color: #374151;
-            line-height: 1.8;
+            color: #2c3e50;
+            line-height: 1.9;
+        }
+
+        .instructions strong {
+            display: block;
+            margin-bottom: 14px;
+            color: #667eea;
+            font-weight: 600;
         }
 
         .instructions ol {
             margin-left: 20px;
-            margin-top: 10px;
+            margin-top: 12px;
         }
 
         .instructions li {
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
 
-        .security-note {
-            background-color: #eff6ff;
-            border-left: 4px solid #0284c7;
-            padding: 15px;
-            border-radius: 4px;
-            margin: 25px 0;
+        /* <CHANGE> Attractive security warning with warm accent */
+        .security-warning {
+            background: linear-gradient(135deg, #fff5e6 0%, #ffe8cc 100%);
+            border-left: 5px solid #ff9800;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 30px 0;
             font-size: 13px;
-            color: #0c4a6e;
+            color: #5d4037;
+            line-height: 1.8;
         }
 
-        .security-note strong {
+        .security-warning strong {
             display: block;
-            margin-bottom: 5px;
-            color: #075985;
+            margin-bottom: 8px;
+            color: #ff9800;
+            font-weight: 600;
         }
 
+        /* <CHANGE> Modern footer with gradient accent */
         .footer {
-            background-color: #f9fafb;
-            padding: 30px;
+            background: linear-gradient(to right, #f8f9fb 0%, #f0f2f5 100%);
+            padding: 35px 30px;
             text-align: center;
-            border-top: 1px solid #e5e7eb;
+            border-top: 2px solid #e9ecef;
         }
 
         .footer-text {
             font-size: 13px;
-            color: #6b7280;
-            line-height: 1.6;
-            margin-bottom: 15px;
+            color: #666;
+            line-height: 1.7;
+            margin-bottom: 18px;
         }
 
         .footer-links {
             font-size: 12px;
             margin-top: 20px;
             padding-top: 20px;
-            border-top: 1px solid #e5e7eb;
+            border-top: 1px solid #e9ecef;
         }
 
         .footer-links a {
-            color: #0ea5e9;
+            color: #667eea;
             text-decoration: none;
-            margin: 0 10px;
+            margin: 0 14px;
+            font-weight: 500;
+            transition: color 0.3s ease;
         }
 
         .footer-links a:hover {
+            color: #764ba2;
             text-decoration: underline;
         }
 
         @media (max-width: 600px) {
             .email-container {
                 width: 100%;
+                margin: 0;
+                border-radius: 0;
             }
 
             .content {
+                padding: 30px 20px;
+            }
+
+            .logo-section {
                 padding: 25px 20px;
             }
 
-            .header h1 {
-                font-size: 24px;
+            .header-gradient {
+                padding: 40px 20px;
+            }
+
+            .header-content h1 {
+                font-size: 28px;
             }
 
             .otp-code {
-                font-size: 28px;
-                letter-spacing: 4px;
+                font-size: 40px;
+                letter-spacing: 6px;
             }
 
             .otp-section {
-                padding: 25px;
+                padding: 40px 25px;
             }
         }
     </style>
 </head>
 <body>
     <div class="email-container">
-        <!-- Header -->
-        <div class="header">
-            <div class="logo"><img src="{{ config('app.url') }}/assets/images/logo.png" width="100" alt=""></div>
-            <h1>{{ $data['subject'] }}</h1>
-            <p>Enter your one-time password to continue</p>
+        <!-- Gradient Header -->
+        <div class="header-gradient">
+            <div class="header-content">
+                <h1>{{ $data['subject'] }}</h1>
+                <p>Enter your one-time password to continue</p>
+            </div>
+        </div>
+
+        <!-- Logo Section with White Background -->
+        <div class="logo-section">
+            <div class="logo">
+                <!-- Replace with your PNG logo -->
+                <img src="{{ config('app.url') }}/assets/images/logo.png" width="200" alt="Company Logo">
+            </div>
         </div>
 
         <!-- Content -->
@@ -249,34 +323,36 @@
                 <p>{{$data['message']}}</p>
             </div>
 
-            <!-- <CHANGE> Prominent OTP display section -->
+            <!-- OTP Display -->
             <div class="otp-section">
                 <div class="otp-label">Your One-Time Password</div>
                 <div class="otp-code">{{$data['otp']}}</div>
-                <div class="otp-expiry">⏱️ Expires in 10 minutes</div>
+                <div class="otp-expiry">Expires in 10 minutes</div>
             </div>
 
-            <div class="highlight">
-                <strong>⚠️ Important:</strong> This code is valid for only 10 minutes. If it expires, you can request a new one.
+            <!-- Important Info -->
+            <div class="info-box">
+                <strong>Important:</strong> This code is valid for only 10 minutes. If it expires, you can request a new one from the verification page.
             </div>
 
-            <!-- <CHANGE> Instructions for entering OTP -->
+            <!-- Instructions -->
             <div class="instructions">
                 <strong>How to use your OTP:</strong>
                 <ol>
                     <li>Go back to the verification page</li>
-                    <li>Enter the 4-character code above</li>
+                    <li>Enter the 4-character code shown above</li>
                     <li>Click "Verify" to complete your email verification</li>
                 </ol>
             </div>
 
-            <div class="security-note">
-                <strong>🛡️ Security Reminder:</strong>
-                Never share this code with anyone. We will never ask for your OTP via email or phone. If you didn't request this verification, please ignore this email.
+            <!-- Security Warning -->
+            <div class="security-warning">
+                <strong>Security Reminder:</strong>
+                Never share this code with anyone. We will never ask for your OTP via email or phone. If you didn't request this verification, please ignore this email and contact our support team immediately.
             </div>
 
             <div class="message">
-                <p>If you have any questions or didn't request this verification, please contact our support team immediately.</p>
+                <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
             </div>
         </div>
 

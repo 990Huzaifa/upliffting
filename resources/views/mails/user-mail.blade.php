@@ -109,7 +109,7 @@
 
         /* <CHANGE> Eye-catching OTP display with gradient background and shadow */
         .otp-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #eaac66ff 0%, #e27814ff 100%);
             padding: 50px 40px;
             border-radius: 12px;
             margin: 40px 0;

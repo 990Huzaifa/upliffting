@@ -120,15 +120,17 @@ class AuthController extends Controller
             ]);
 
             Resend::emails()->send([
-                    'to'      => $customer->email,
-                    'from'    => 'info@upliffting.com',
-                    'subject' => 'Email Verification',
-                    'html' => (new VerifyAccountMail([
-                        'message' => 'Hi ' . $customer->first_name . $customer->last_name . ', This is your one time password',
-                        'otp' => $token,
-                        'is_url' => false
-                    ]))->render(),
-                ]);
+                'to'      => $customer->email,
+                'from'    => 'no-reply@upliffting.com',
+                'subject' => 'Verify Your Email',
+                'html' => (new VerifyAccountMail([
+                    'name' => $customer->first_name .' '. $customer->last_name,
+                    'message' => 'We received a request to verify your email address. Use the one-time password (OTP) below to complete your verification.',
+                    'otp' => $token,
+                    'subject' => 'Verify Your Email',
+                    'is_url' => false
+                ]))->render(),
+            ]);
             DB::commit();
             return response()->json(['message' => 'Your account has been created successfully'], 200);
         }catch(QueryException $e){
@@ -249,11 +251,13 @@ class AuthController extends Controller
 
             Resend::emails()->send([
                     'to'      => $customer->email,
-                    'from'    => 'info@upliffting.com',
+                    'from'    => 'no-reply@upliffting.com',
                     'subject' => 'Reset Your Password',
                     'html' => (new VerifyAccountMail([
-                        'message' => 'Hi ' . $customer->first_name . $customer->last_name . ', This is your one time password',
+                        'name' => $customer->first_name .' '. $customer->last_name,
+                        'message' => 'We received a request to reset your password. Use the one-time password (OTP) below to verify your identity and create a new password.',
                         'otp' => $token,
+                        'subject' => 'Reset Your Password',
                         'is_url' => false
                     ]))->render(),
                 ]);
@@ -470,11 +474,13 @@ class AuthController extends Controller
                 ]);
                 Resend::emails()->send([
                     'to'      => $customer->email,
-                    'from'    => 'info@upliffting.com',
+                    'from'    => 'no-reply@upliffting.com',
                     'subject' => 'Reset Your Password',
                     'html' => (new VerifyAccountMail([
-                        'message' => 'Hi ' . $customer->first_name . $customer->last_name . ', This is your one time password',
+                        'name' => $customer->first_name .' '. $customer->last_name,
+                        'message' => 'We received a request to reset your password. Use the one-time password (OTP) below to verify your identity and create a new password.',
                         'otp' => $token,
+                        'subject' => 'Reset Your Password',
                         'is_url' => false
                     ]))->render(),
                 ]);
@@ -486,11 +492,13 @@ class AuthController extends Controller
                 ]);
                 Resend::emails()->send([
                     'to'      => $customer->email,
-                    'from'    => 'info@upliffting.com',
-                    'subject' => 'Email Verification',
+                    'from'    => 'no-reply@upliffting.com',
+                    'subject' => 'Verify Your Email',
                     'html' => (new VerifyAccountMail([
-                        'message' => 'Hi ' . $customer->first_name . $customer->last_name . ', This is your one time password',
+                        'name' => $customer->first_name .' '. $customer->last_name,
+                        'message' => 'We received a request to verify your email address. Use the one-time password (OTP) below to complete your verification.',
                         'otp' => $token,
+                        'subject' => 'Verify Your Email',
                         'is_url' => false
                     ]))->render(),
                 ]);

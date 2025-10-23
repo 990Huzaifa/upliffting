@@ -240,20 +240,20 @@
             font-size: 13px;
             color: #666;
             line-height: 1.7;
-            margin-bottom: 18px;
+            margin-bottom: 8px;
         }
 
         .footer-links {
             font-size: 12px;
-            margin-top: 20px;
-            padding-top: 20px;
+            margin-top: 5px;
+            padding-top: 5px;
             border-top: 1px solid #e9ecef;
         }
 
         .footer-links a {
             color: #667eea;
             text-decoration: none;
-            margin: 0 14px;
+            margin: 0 10px;
             font-weight: 500;
             transition: color 0.3s ease;
         }
@@ -292,7 +292,7 @@
             }
 
             .otp-section {
-                padding: 20px 5px;
+                padding: 10px 5px;
             }
         }
     </style>

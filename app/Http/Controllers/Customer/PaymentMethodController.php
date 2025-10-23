@@ -59,7 +59,6 @@ class PaymentMethodController extends Controller
             $user = Auth::user();
             $validator = Validator::make($request->all(), [
                 'stripe_payment_method_id' => 'required',
-                'card_number' => 'required|string|max:16',
             ]);
 
             if ($validator->fails()) {
@@ -76,7 +75,6 @@ class PaymentMethodController extends Controller
                 UserAccount::create([
                     'user_id' => $user->id,
                     'stripe_payment_method_id' => $paymentMethodId,
-                    'card_number' => '**** **** **** ' . substr($request->input('card_number'), -4),
                     'is_default' => true,
                 ]);
 

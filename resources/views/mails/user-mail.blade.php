@@ -327,12 +327,12 @@
             <div class="otp-section">
                 <div class="otp-label">Your One-Time Password</div>
                 <div class="otp-code">{{$data['otp']}}</div>
-                <div class="otp-expiry">Expires in 10 minutes</div>
+                <div class="otp-expiry">⏱ Expires in 10 minutes</div>
             </div>
 
             <!-- Important Info -->
             <div class="info-box">
-                <strong>Important:</strong> This code is valid for only 10 minutes. If it expires, you can request a new one from the verification page.
+                <strong>⚠️ Important:</strong> This code is valid for only 10 minutes. If it expires, you can request a new one from the verification page.
             </div>
 
             <!-- Instructions -->
@@ -347,7 +347,7 @@
 
             <!-- Security Warning -->
             <div class="security-warning">
-                <strong>Security Reminder:</strong>
+                <strong>🔐 Security Reminder:</strong>
                 Never share this code with anyone. We will never ask for your OTP via email or phone. If you didn't request this verification, please ignore this email and contact our support team immediately.
             </div>
 

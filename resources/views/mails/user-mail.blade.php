@@ -104,7 +104,7 @@
             font-size: 15px;
             color: #555;
             line-height: 1.8;
-            margin-bottom: 35px;
+            margin-bottom: 15px;
         }
 
         /* <CHANGE> Eye-catching OTP display with gradient background and shadow */
@@ -166,7 +166,7 @@
         /* <CHANGE> Modern info boxes with accent colors */
         .info-box {
             background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
-            padding: 20px;
+            padding: 10px;
             border-left: 5px solid #667eea;
             border-radius: 8px;
             margin: 30px 0;
@@ -184,18 +184,18 @@
 
         .instructions {
             background: #f8f9fb;
-            padding: 24px;
+            padding: 20px;
             border: 2px solid #e9ecef;
             border-radius: 8px;
             margin: 30px 0;
             font-size: 14px;
             color: #2c3e50;
-            line-height: 1.9;
+            line-height: 1.4;
         }
 
         .instructions strong {
             display: block;
-            margin-bottom: 14px;
+            margin-bottom: 10px;
             color: #667eea;
             font-weight: 600;
         }
@@ -213,7 +213,7 @@
         .security-warning {
             background: linear-gradient(135deg, #fff5e6 0%, #ffe8cc 100%);
             border-left: 5px solid #ff9800;
-            padding: 20px;
+            padding: 10px;
             border-radius: 8px;
             margin: 30px 0;
             font-size: 13px;
@@ -275,7 +275,7 @@
             }
 
             .logo-section {
-                padding: 25px 20px;
+                padding: 5px 5px;
             }
 
             .header-gradient {
@@ -292,7 +292,7 @@
             }
 
             .otp-section {
-                padding: 40px 25px;
+                padding: 20px 5px;
             }
         }
     </style>

@@ -132,6 +132,22 @@ class StripeService
         }
     }
 
+    public function getCardDetails(string $paymentMethodId)
+    {
+        try {
+            $paymentMethod = PaymentMethod::retrieve($paymentMethodId);
+            return [
+                'success' => true,
+                'card' => $paymentMethod->card,
+            ];
+        } catch (ApiErrorException $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage(),
+            ];
+        }
+    }
+
 
 
     // rider connected account methods

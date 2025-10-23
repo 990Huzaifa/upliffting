@@ -12,6 +12,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Log;
 
 class PaymentMethodController extends Controller
 {
@@ -70,6 +71,8 @@ class PaymentMethodController extends Controller
             $stripeService = new StripeService();
             $result = $stripeService->attachPaymentMethodToCustomer($customerId, $paymentMethodId);
 
+            $cardDetails = $stripeService->getCardDetails($paymentMethodId);
+            Log::info('Card Details: ', (array)$cardDetails);
             if ($result['success']) {
 
                 UserAccount::create([

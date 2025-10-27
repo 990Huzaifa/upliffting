@@ -118,8 +118,8 @@ class VehicleController extends Controller
             }
             $vehicleInspection->is_tires = $request->is_tires;
             if($request->is_tires == 0){
-                $this->unlinkImage($request->tire);
-                $request->tire = null; // Assuming you want to set it to null if 0 is selected
+                $this->unlinkImage($request->tires);
+                $request->tires = null; // Assuming you want to set it to null if 0 is selected
             }
             $vehicleInspection->save();
 

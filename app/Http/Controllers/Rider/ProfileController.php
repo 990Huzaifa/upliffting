@@ -212,9 +212,24 @@ class ProfileController extends Controller
 
             $vehicle = Vehicle::where('vehicle_of', $user->id)->where('is_driving', true)->first();
 
-            $vehicleInspection = VehicleInspection::where('vehicle_id', $vehicle->id)->first() ?? null;
-            ;
-            return response()->json(['user' => $data, 'vehicle' => $vehicle, 'vehicle_inspection' => $vehicleInspection], 200);
+
+            $vehicle_inspection = VehicleInspection::where('vehicle_id', $vehicle->id)->first();
+            if(empty($vehicle_inspection)){
+                $vehicle_inspection = null;
+            }else{
+                if (
+                $vehicle_inspection->headlights == null || 
+                $vehicle_inspection->airlights == null || 
+                $vehicle_inspection->indicators == null || 
+                $vehicle_inspection->stop_lights == null || 
+                $vehicle_inspection->windshield == null || 
+                $vehicle_inspection->windshield_wipers == null || 
+                $vehicle_inspection->safty_belt == null || 
+                $vehicle_inspection->tires == null || 
+                $vehicle_inspection->speedometer == null
+            ) $vehicle_inspection = null;
+            }
+            return response()->json(['user' => $data, 'vehicle' => $vehicle, 'vehicle_inspection' => $vehicle_inspection], 200);
         }catch(QueryException $e){
             return response()->json(['DB error' => $e->getMessage()], 500);
         }catch(Exception $e){

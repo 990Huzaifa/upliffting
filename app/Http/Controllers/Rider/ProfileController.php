@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\UserAccount;
 use App\Models\UserBank;
 use App\Models\Vehicle;
+use App\Models\VehicleInspection;
 use App\Services\StripeService;
 use Exception;
 use Illuminate\Database\QueryException;
@@ -194,6 +195,25 @@ class ProfileController extends Controller
                 'online_status' => $request->status
             ]);
             return response()->json(['message' => 'status updated successfully'], 200);
+        }catch(QueryException $e){
+            return response()->json(['DB error' => $e->getMessage()], 500);
+        }catch(Exception $e){
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getVeirficationInfo(): JsonResponse
+    {
+        try{
+            $user = Auth::user();
+            $data = User::select('riders.*','users.*','users.status as account_status')
+            ->join('riders', 'users.id', '=', 'riders.user_id')
+            ->where('users.id', $user->id)->first();
+
+            $vehicle = Vehicle::where('vehicle_of', $user->id)->where('is_driving', true)->first();
+
+            $vehicleInspection = VehicleInspection::where('vehicle_id', $vehicle->id)->first();
+            return response()->json(['user' => $data, 'vehicle' => $vehicle, 'vehicle_inspection' => $vehicleInspection], 200);
         }catch(QueryException $e){
             return response()->json(['DB error' => $e->getMessage()], 500);
         }catch(Exception $e){

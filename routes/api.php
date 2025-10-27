@@ -175,6 +175,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('/profile', 'profile');
             Route::post('/edit-profile', 'editProfile');
 
+            Route::get('verification-info','getVeirficationInfo');
+
             // strip apis
             Route::get('/stripe/onboarding-link', 'stripeOnboardingLink');
             Route::get('/stripe/onboarding/refresh', 'refreshOnboardingLink');

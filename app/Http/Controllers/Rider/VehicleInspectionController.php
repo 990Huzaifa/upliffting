@@ -111,7 +111,7 @@ class VehicleInspectionController extends Controller
             $inspection->save();
 
             DB::commit();
-            return response()->json(['user' => $user], 200);
+            return response()->json(['user' => $user, 'inspection-data' => $inspection], 200);
 
         } catch (QueryException $e) {
             DB::rollBack();

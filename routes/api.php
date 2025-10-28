@@ -49,10 +49,6 @@ Route::prefix('rider')->group(function () {
     Route::post('/reset-password', [RiderAuth::class, 'resetPassword']);
     Route::put('/verify/{token}/{email}', [RiderAuth::class, 'verification']);
 
-    Route::controller(RiderProfileController::class)->group(function () {
-        Route::get('/stripe/onboarding/refresh/{id}', 'refreshOnboardingLink');
-        Route::get('/stripe/onboarding/success/{id}', 'successOnboardingLink');
-    });
 });
 
 // for customer

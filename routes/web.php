@@ -10,7 +10,7 @@ use App\Http\Controllers\Admin\VehicleController;
 use App\Http\Controllers\ContactController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\AuthController as AdminAuth;
-use App\Http\Controllers\Admin\RiderController;
+use App\Http\Controllers\Rider\ProfileController as RiderProfileController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -24,6 +24,11 @@ use App\Http\Controllers\Admin\RiderController;
 Route::get('/optimize-clear', function () {
     Artisan::call('optimize:clear');
     return 'Optimization cache cleared!';
+});
+
+Route::prefix('rider')->controller(RiderProfileController::class)->group(function () {
+    Route::get('/stripe/onboarding/refresh/{id}', 'refreshOnboardingLink');
+    Route::get('/stripe/onboarding/success/{id}', 'successOnboardingLink');
 });
 
 

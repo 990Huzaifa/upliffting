@@ -174,8 +174,8 @@ class StripeService
         try {
             $link = AccountLink::create([
                 'account' => $accountId,
-                'refresh_url' => config('app.url').'/api/rider/stripe/onboarding/refresh/'.$id,
-                'return_url' => config('app.url').'/api/rider/stripe/onboarding/success/'.$id,
+                'refresh_url' => config('app.url').'/rider/stripe/onboarding/refresh/'.$id,
+                'return_url' => config('app.url').'/rider/stripe/onboarding/success/'.$id,
                 'type' => 'account_onboarding',
             ]);
 

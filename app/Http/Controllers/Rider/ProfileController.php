@@ -392,7 +392,7 @@ class ProfileController extends Controller
             $riderAccountId = Rider::where('user_id',$id)->value('stripe_account_id');
             $stripeService = new StripeService();
             $link = $stripeService->createOnboardingLink($riderAccountId, $id);
-            return redirect($link);
+            return response()->json(['url' => $link], 200);
         }catch(Exception $e){
             return response()->json(['error' => $e->getMessage()], 500);
         }

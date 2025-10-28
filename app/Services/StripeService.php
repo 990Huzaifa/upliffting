@@ -174,8 +174,8 @@ class StripeService
         try {
             $link = AccountLink::create([
                 'account' => $accountId,
-                'refresh_url' => 'https://api.upliffting.com/rider/stripe/onboarding/refresh/'.$id,
-                'return_url' => 'https://api.upliffting.com/rider/stripe/onboarding/success/'.$id,
+                'refresh_url' => 'https://donation.zetdigi.com/refresh.php/'.$id,
+                'return_url' => 'https://donation.zetdigi.com/success.php/'.$id,
                 'type' => 'account_onboarding',
             ]);
 

@@ -379,37 +379,35 @@ class ProfileController extends Controller
             $stripAcoountId = Rider::where('user_id',$user->id)->value('stripe_account_id');
 
             $stripeService = new StripeService();
-            $link = $stripeService->createOnboardingLink($stripAcoountId);
+            $link = $stripeService->createOnboardingLink($stripAcoountId,$user->id);
             return response()->json(['onboarding_link' => $link], 200);
         }catch(Exception $e){
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
-    public function refreshOnboardingLink(Request $request): JsonResponse
+    public function refreshOnboardingLink($id): JsonResponse
     {
         try{
-            $user = Auth::user();
-            $riderAccountId = Rider::where('user_id',$user->id)->value('stripe_account_id');
+            $riderAccountId = Rider::where('user_id',$id)->value('stripe_account_id');
             $stripeService = new StripeService();
-            $link = $stripeService->createOnboardingLink($riderAccountId);
+            $link = $stripeService->createOnboardingLink($riderAccountId, $id);
             return response()->json(['onboarding_link' => $link], 200);
         }catch(Exception $e){
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
-    public function successOnboardingLink(Request $request): JsonResponse
+    public function successOnboardingLink($id): JsonResponse
     {
         try{
-            $user = Auth::user();
-            $riderAccountId = Rider::where('user_id',$user->id)->value('stripe_account_id');
+            $riderAccountId = Rider::where('user_id',$id)->value('stripe_account_id');
 
             $stripeService = new StripeService();
 
             $accountStatus = $stripeService->retrieveAccount($riderAccountId);
             if($accountStatus['success'] == true){
-                Rider::where('user_id', $user->id)->update([
+                Rider::where('user_id', $id)->update([
                     'is_stripe_verified' => $accountStatus['is_verified']
                 ]);
             }

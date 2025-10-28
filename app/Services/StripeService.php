@@ -169,13 +169,13 @@ class StripeService
         }
     }
 
-    public function createOnboardingLink(string $accountId)
+    public function createOnboardingLink(string $accountId, $id)
     {
         try {
             $link = AccountLink::create([
                 'account' => $accountId,
-                'refresh_url' => config('app.url').'/api/rider/stripe/onboarding/refresh',
-                'return_url' => config('app.url').'/api/rider/stripe/onboarding/success',
+                'refresh_url' => config('app.url').'/api/rider/stripe/onboarding/refresh/'.$id,
+                'return_url' => config('app.url').'/api/rider/stripe/onboarding/success/'.$id,
                 'type' => 'account_onboarding',
             ]);
 

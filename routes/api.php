@@ -48,6 +48,11 @@ Route::prefix('rider')->group(function () {
     Route::post('/forgot-password', [RiderAuth::class, 'forgotPassword']);
     Route::post('/reset-password', [RiderAuth::class, 'resetPassword']);
     Route::put('/verify/{token}/{email}', [RiderAuth::class, 'verification']);
+
+    Route::controller(RiderProfileController::class)->group(function () {
+        Route::get('/stripe/onboarding/refresh/{id}', 'refreshOnboardingLink');
+        Route::get('/stripe/onboarding/success/{id}', 'successOnboardingLink');
+    });
 });
 
 // for customer
@@ -104,6 +109,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
             //  vechicle
             Route::apiResource('vehicles',  AdminVehicleController::class)->only('index', 'show');
+
+            Route::post('vehicles/approve/{id}', [AdminVehicleController::class, 'approveVehicle']);
             Route::post('vehicles/approve-inspection/{id}', [AdminVehicleController::class, 'updateInspection'])->name('.update-inspection');
 
             
@@ -119,11 +126,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::apiResource('/vehicle-type-rates', VehicleTypeRateController::class)->only(['index', 'store', 'show']);
 
             // start from here csc
-            Route::get('countries', [VehicleTypeRateController::class, 'country'])->name('countries');
-            Route::get('currency', [VehicleTypeRateController::class, 'currency']);
-            Route::get('states', [VehicleTypeRateController::class, 'state']);
-            Route::get('states/{id}', [VehicleTypeRateController::class, 'statesByCountry']);
-            Route::get('cities/{id}', [VehicleTypeRateController::class, 'cityByState']);
+            Route::controller(VehicleTypeRateController::class)->group(function () {
+                Route::get('countries', 'country');
+                Route::get('currency', 'currency');
+                Route::get('states', 'state');
+                Route::get('states/{id}', 'statesByCountry');
+                Route::get('cities/{id}', 'cityByState');
+            });
             // end here
 
 
@@ -179,8 +188,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
             // strip apis
             Route::get('/stripe/onboarding-link', 'stripeOnboardingLink');
-            Route::get('/stripe/onboarding/refresh', 'refreshOnboardingLink');
-            Route::get('/stripe/onboarding/success', 'successOnboardingLink');
+            Route::get('/stripe/onboarding/refresh/{id}', 'refreshOnboardingLink');
+            Route::get('/stripe/onboarding/success/{id}', 'successOnboardingLink');
 
 
             Route::post('/add-card', 'addCard');

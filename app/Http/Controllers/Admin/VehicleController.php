@@ -129,6 +129,21 @@ class VehicleController extends Controller
         }
     }
 
+    public function approveVehicle(string $id): JsonResponse
+    {
+        try{
+            $vehicle = Vehicle::findOrFail($id);
+            $vehicle->is_approved = true;
+            $vehicle->approved_by = auth()->user()->id;
+            $vehicle->approved_at = now();
+            $vehicle->save();
+
+            return response()->json(['message' => 'Vehicle approved successfully'], 200);
+        }catch(Exception $e){
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
+    }
+
 
     private function unlinkImage($imagePath)
     {

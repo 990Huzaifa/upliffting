@@ -386,13 +386,13 @@ class ProfileController extends Controller
         }
     }
 
-    public function refreshOnboardingLink($id): JsonResponse
+    public function refreshOnboardingLink($id)
     {
         try{
             $riderAccountId = Rider::where('user_id',$id)->value('stripe_account_id');
             $stripeService = new StripeService();
             $link = $stripeService->createOnboardingLink($riderAccountId, $id);
-            return response()->json(['onboarding_link' => $link], 200);
+            return redirect($link);
         }catch(Exception $e){
             return response()->json(['error' => $e->getMessage()], 500);
         }

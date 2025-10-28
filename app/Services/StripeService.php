@@ -174,8 +174,8 @@ class StripeService
         try {
             $link = AccountLink::create([
                 'account' => $accountId,
-                'refresh_url' => 'https://donation.zetdigi.com/refresh.php/'.$id,
-                'return_url' => 'https://donation.zetdigi.com/redirector.php?link=' . urlencode('https://donation.zetdigi.com/success.php/'.$id),
+                'refresh_url' => 'https://devcatsoftwares.com/refresh.php/'.$id,
+                'return_url' => 'https://devcatsoftwares.com/redirector.php?link=' . urlencode('https://devcatsoftwares.com/success.php/'.$id),
                 'type' => 'account_onboarding',
             ]);
 

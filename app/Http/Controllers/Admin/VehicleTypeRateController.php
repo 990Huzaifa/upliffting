@@ -239,7 +239,7 @@ class VehicleTypeRateController extends Controller
     }
     public function list2(): JsonResponse
     {
-        $data = VehicleTypeRate::all();
+        $data = VehicleTypeRate::select('vehicle_type_rates.*', 'vehicle_types.title as vehicle_type_title','vehicle_types.icon as icon');
         return response()->json($data,200);
     }
 

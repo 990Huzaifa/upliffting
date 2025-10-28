@@ -398,7 +398,7 @@ class ProfileController extends Controller
         }
     }
 
-    public function successOnboardingLink($id): JsonResponse
+    public function successOnboardingLink($id)
     {
         try{
             $riderAccountId = Rider::where('user_id',$id)->value('stripe_account_id');
@@ -411,7 +411,21 @@ class ProfileController extends Controller
                     'is_stripe_verified' => $accountStatus['is_verified']
                 ]);
             }
-            return response()->json(['message' => 'Onboarding completed successfully'], 200);
+            // return response()->json(['message' => 'Onboarding completed successfully'], 200);
+            return response('
+                <html>
+                    <head><title>Stripe Onboarding</title></head>
+                    <body style="text-align:center; margin-top:50px;">
+                        <h2>✅ Onboarding Completed</h2>
+                        <p>You can close this tab. Redirecting you to the app...</p>
+                        <script>
+                            setTimeout(function(){
+                                window.location.href = "myapp://onboarding/success";
+                            }, 1000);
+                        </script>
+                    </body>
+                </html>
+                ', 200)->header('Content-Type', 'text/html');
         }catch(Exception $e){
             return response()->json(['error' => $e->getMessage()], 500);
         }

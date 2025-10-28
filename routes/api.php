@@ -188,8 +188,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
             // strip apis
             Route::get('/stripe/onboarding-link', 'stripeOnboardingLink');
-            Route::get('/stripe/onboarding/refresh/{id}', 'refreshOnboardingLink');
-            Route::get('/stripe/onboarding/success/{id}', 'successOnboardingLink');
 
 
             Route::post('/add-card', 'addCard');

@@ -21,6 +21,10 @@ use App\Http\Controllers\Rider\ProfileController as RiderProfileController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+
+Route::get('/', function () {
+    return "Hello World!";
+});
 Route::get('/optimize-clear', function () {
     Artisan::call('optimize:clear');
     return 'Optimization cache cleared!';

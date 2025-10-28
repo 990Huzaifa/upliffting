@@ -174,8 +174,8 @@ class StripeService
         try {
             $link = AccountLink::create([
                 'account' => $accountId,
-                'refresh_url' => 'https://devcatsoftwares.com/refresh.php/'.$id,
-                'return_url' => 'https://devcatsoftwares.com/redirector.php?link=' . urlencode('https://devcatsoftwares.com/success.php/'.$id),
+                'refresh_url' => 'upliffting://stripe/refresh',
+                'return_url' => 'upliffting://stripe/success',
                 'type' => 'account_onboarding',
             ]);
 

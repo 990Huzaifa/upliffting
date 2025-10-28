@@ -263,7 +263,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         });
 
-        Route::get('vehicle-type', [VehicleTypeRateController::class, 'list2']);
+        Route::get('vehicle-type', [VehicleTypeRateController::class, 'list1']);
         
     });
     

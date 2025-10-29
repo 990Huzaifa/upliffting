@@ -187,12 +187,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('verification-info','getVeirficationInfo');
 
             // strip apis
-            Route::get('/stripe/onboarding-link', 'stripeOnboardingLink');
+            Route::post('/stripe/add-bank-token', 'addBank');
+            Route::post('/stripe/update-ssn', 'addSSN');
+            Route::get('/stripe/tos-acceptance', 'tosAcceptance');
 
-
-            Route::post('/add-card', 'addCard');
-            Route::post('/add-bank', 'addBank');
-            Route::post('/add-ss-number', 'addSSN');
             Route::put('/go-online', 'goOnline');
             Route::put('/is-pet', 'pet');
             Route::get('/activate-vehicle/{id}', 'activateVehicle');

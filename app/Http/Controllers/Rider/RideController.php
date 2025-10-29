@@ -325,7 +325,8 @@ class RideController extends Controller
         try{
             $user = Auth::user();
             $ride = Rides::where('rider_id', $user->id)->whereIn('status', ['finding', 'on a way', 'arrived', 'started'])->first();
-            if(!$ride) return response()->json(['message' => 'Ride not found'], 200);;
+            if(!$ride) return response()->json(['message' => 'Ride not found'], 200);
+            
             $customerData = User::select('id','first_name','last_name','avatar','phone','lat','lng')->where('id', $ride->customer_id)->first();
             $rideDropOffs = RidesDropOff::where('ride_id', $ride->id)->get();
             $plate_no = Vehicle::where('id', $ride->vehicle_id)->value('registration_number');

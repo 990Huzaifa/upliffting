@@ -115,77 +115,6 @@ class ProfileController extends Controller
         }
     }
 
-    public function addBank(Request $request): JsonResponse
-    {
-        try{
-            $user = Auth::user();
-            DB::beginTransaction();  
-            $validator = Validator::make($request->all(),[
-                'bank_name' => 'required',
-                'account_holder_name' => 'required',
-                'account_number' => 'required|numeric',
-                'account_type' => 'required',
-                'routing_number' => 'required',
-            ],[
-                'bank_name.required' => 'Bank name is required',
-                'account_holder_name.required' => 'Account name is required',
-                'account_number.required' => 'Account number is required',
-                'account_number.numeric' => 'Account number must be numeric',
-                'account_type.required' => 'Account type is required',
-                'routing_number.required' => 'Routing number is required',
-            ]);
-            
-            if($validator->fails())throw new Exception($validator->errors()->first(),400);
-
-            $data = UserBank::create([
-                'user_id' => $user->id,
-                'bank_name' => $request->bank_name,
-                'account_holder_name' => $request->account_holder_name,
-                'account_number' => $request->account_number,
-                'account_type' => $request->account_type,
-                'routing_number' => $request->routing_number,
-            ]);
-
-            DB::commit();
-            return response()->json(['data' => $data], 200);
-        }catch(QueryException $e){
-            DB::rollBack();
-            return response()->json(['DB error' => $e->getMessage()], 500);
-        }catch(Exception $e){
-            DB::rollBack();
-            return response()->json(['error' => $e->getMessage()], $e->getCode());
-        }
-    }
-
-    public function addSSN(Request $request): JsonResponse
-    {
-        try{
-            $user = Auth::user();
-            DB::beginTransaction();  
-            $validator = Validator::make($request->all(),[
-                'social_security_number' => 'required|numeric',
-            ],[
-                'social_security_number.required' => 'Social security number is required',
-                'social_security_number.numeric' => 'Social security number must be numeric',
-            ]);
-            
-            if($validator->fails())throw new Exception($validator->errors()->first(),400);
-
-            $user->update([
-                'social_security_number' => $request->social_security_number
-            ]);
-            DB::commit();
-            return response()->json(['user' => $user], 200);
-
-        }catch(QueryException $e){
-            DB::rollBack();
-            return response()->json(['DB error' => $e->getMessage()], 500);
-        }catch(Exception $e){
-            DB::rollBack();
-            return response()->json(['error' => $e->getMessage()], $e->getCode());
-        }
-    }
-
     public function goOnline(Request $request): JsonResponse
     {
         try{
@@ -372,63 +301,158 @@ class ProfileController extends Controller
     // strip function for rider
 
 
-    public function stripeOnboardingLink(Request $request): JsonResponse
+    // public function stripeOnboardingLink(Request $request): JsonResponse
+    // {
+    //     try{
+    //         $user = Auth::user();
+    //         $stripAcoountId = Rider::where('user_id',$user->id)->value('stripe_account_id');
+
+    //         $stripeService = new StripeService();
+    //         $link = $stripeService->createOnboardingLink($stripAcoountId,$user->id);
+    //         return response()->json(['onboarding_link' => $link], 200);
+    //     }catch(Exception $e){
+    //         return response()->json(['error' => $e->getMessage()], 500);
+    //     }
+    // }
+
+    // public function refreshOnboardingLink($id)
+    // {
+    //     try{
+    //         $riderAccountId = Rider::where('user_id',$id)->value('stripe_account_id');
+    //         $stripeService = new StripeService();
+    //         $link = $stripeService->createOnboardingLink($riderAccountId, $id);
+    //         return response()->json(['url' => $link], 200);
+    //     }catch(Exception $e){
+    //         return response()->json(['error' => $e->getMessage()], 500);
+    //     }
+    // }
+
+    // public function successOnboardingLink($id)
+    // {
+    //     try{
+    //         $riderAccountId = Rider::where('user_id',$id)->value('stripe_account_id');
+
+    //         $stripeService = new StripeService();
+
+    //         $accountStatus = $stripeService->retrieveAccount($riderAccountId);
+    //         if($accountStatus['success'] == true){
+    //             Rider::where('user_id', $id)->update([
+    //                 'is_stripe_verified' => $accountStatus['is_verified']
+    //             ]);
+    //         }
+    //         // return response()->json(['message' => 'Onboarding completed successfully'], 200);
+    //         return response('
+    //             <html>
+    //                 <head><title>Stripe Onboarding</title></head>
+    //                 <body style="text-align:center; margin-top:50px;">
+    //                     <h2>✅ Onboarding Completed</h2>
+    //                     <p>You can close this tab. Redirecting you to the app...</p>
+    //                     <script>
+    //                         setTimeout(function(){
+    //                             window.location.href = "myapp://onboarding/success";
+    //                         }, 1000);
+    //                     </script>
+    //                 </body>
+    //             </html>
+    //             ', 200)->header('Content-Type', 'text/html');
+    //     }catch(Exception $e){
+    //         return response()->json(['error' => $e->getMessage()], 500);
+    //     }
+    // }
+
+    public function addBank(Request $request): JsonResponse
     {
         try{
             $user = Auth::user();
-            $stripAcoountId = Rider::where('user_id',$user->id)->value('stripe_account_id');
-
+            DB::beginTransaction();  
+            $validator = Validator::make($request->all(),[
+                'stripe_account_id' => 'required',
+                'bank_token' => 'required',
+            ],[
+                'stripe_account_id.required' => 'Stripe account ID is required',
+                'bank_token.required' => 'Bank token is required',
+            ]);
+            
+            if($validator->fails())throw new Exception($validator->errors()->first(),400);
+            $acc_id = $request->stripe_account_id;
+            $token = $request->bank_token;
             $stripeService = new StripeService();
-            $link = $stripeService->createOnboardingLink($stripAcoountId,$user->id);
-            return response()->json(['onboarding_link' => $link], 200);
+            $response = $stripeService->addBankAccount($acc_id, $token);
+
+            DB::commit();
+            return response()->json(['data' => $response], 200);
+        }catch(QueryException $e){
+            DB::rollBack();
+            return response()->json(['DB error' => $e->getMessage()], 500);
         }catch(Exception $e){
-            return response()->json(['error' => $e->getMessage()], 500);
+            DB::rollBack();
+            return response()->json(['error' => $e->getMessage()], $e->getCode());
         }
     }
 
-    public function refreshOnboardingLink($id)
+    public function addSSN(Request $request): JsonResponse
     {
         try{
-            $riderAccountId = Rider::where('user_id',$id)->value('stripe_account_id');
+            $user = Auth::user();
+            DB::beginTransaction();  
+            $validator = Validator::make($request->all(),[
+                'stripe_account_id' => 'required',
+                'social_security_number' => 'required|numeric',
+            ],[
+                'stripe_account_id.required' => 'Stripe account ID is required',
+                'social_security_number.required' => 'Social security number is required',
+                'social_security_number.numeric' => 'Social security number must be numeric',
+            ]);
+            
+            if($validator->fails())throw new Exception($validator->errors()->first(),400);
+
+            $user->update([
+                'social_security_number' => $request->social_security_number
+            ]);
+            $acc_id = $request->stripe_account_id;
             $stripeService = new StripeService();
-            $link = $stripeService->createOnboardingLink($riderAccountId, $id);
-            return response()->json(['url' => $link], 200);
+            $response = $stripeService->updateSSN($acc_id, $request->social_security_number);
+            DB::commit();
+            return response()->json(['user' => $user], 200);
+
+        }catch(QueryException $e){
+            DB::rollBack();
+            return response()->json(['DB error' => $e->getMessage()], 500);
         }catch(Exception $e){
-            return response()->json(['error' => $e->getMessage()], 500);
+            DB::rollBack();
+            return response()->json(['error' => $e->getMessage()], $e->getCode());
         }
     }
 
-    public function successOnboardingLink($id)
+    public function tosAcceptance(Request $request): JsonResponse
     {
         try{
-            $riderAccountId = Rider::where('user_id',$id)->value('stripe_account_id');
+            $user = Auth::user();
+            DB::beginTransaction();  
+            $validator = Validator::make($request->all(),[
+                'stripe_account_id' => 'required',
+            ],[
+                'stripe_account_id.required' => 'Stripe account ID is required',
+            ]);
+            
+            if($validator->fails())throw new Exception($validator->errors()->first(),400);
 
+            $acc_id = $request->stripe_account_id;
+            $ip = $request->ip();
             $stripeService = new StripeService();
+            $response = $stripeService->tosAcceptance($acc_id, $ip);
+            DB::commit();
+            return response()->json(['data' => $response], 200);
 
-            $accountStatus = $stripeService->retrieveAccount($riderAccountId);
-            if($accountStatus['success'] == true){
-                Rider::where('user_id', $id)->update([
-                    'is_stripe_verified' => $accountStatus['is_verified']
-                ]);
-            }
-            // return response()->json(['message' => 'Onboarding completed successfully'], 200);
-            return response('
-                <html>
-                    <head><title>Stripe Onboarding</title></head>
-                    <body style="text-align:center; margin-top:50px;">
-                        <h2>✅ Onboarding Completed</h2>
-                        <p>You can close this tab. Redirecting you to the app...</p>
-                        <script>
-                            setTimeout(function(){
-                                window.location.href = "myapp://onboarding/success";
-                            }, 1000);
-                        </script>
-                    </body>
-                </html>
-                ', 200)->header('Content-Type', 'text/html');
+        }catch(QueryException $e){
+            DB::rollBack();
+            return response()->json(['DB error' => $e->getMessage()], 500);
         }catch(Exception $e){
-            return response()->json(['error' => $e->getMessage()], 500);
+            DB::rollBack();
+            return response()->json(['error' => $e->getMessage()], $e->getCode());
         }
     }
+
+    
     
 }

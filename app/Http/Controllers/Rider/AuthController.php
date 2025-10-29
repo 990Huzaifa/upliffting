@@ -108,6 +108,7 @@ class AuthController extends Controller
             $stripeService = new StripeService();
             $stripeAccountId = $stripeService->createConnectedAccount(
                 $rider->email,
+                $request->country_name
             );
             Rider::create([
                 'user_id' => $rider->id,
@@ -225,7 +226,6 @@ class AuthController extends Controller
                 return response()->json(['add-vehicle' => 1, 'message' => 'Lets complete your profile', 'token' => $token, 'user' => $user], 200);
 
             $vehicle_inspection = VehicleInspection::where('vehicle_id', $vehicle->id)->first();
-            $bank_account = UserBank::where('user_id', $user->id)->first();
 
             // required list
             $pp = true;
@@ -255,15 +255,13 @@ class AuthController extends Controller
                 $vehicle_inspection->speedometer == null
             ) $inspection = false;
             }
-            if (empty($bank_account)) $bank = false;
             $list = [
                 'profile Photo' => $pp,
                 'Driving License' => $dr_fnb,
                 'Vehicle Insurance' => $vehicle_insurance,
                 'Registration Certificate' => $rc,
                 'Background Verification' => $background_verfied,
-                'Vehicle Inspection' => $inspection,
-                'Bank Account' => $bank
+                'Vehicle Inspection' => $inspection
             ];
             if (!$pp || !$dr_fnb || !$vehicle_insurance || !$rc || !$background_verfied || !$inspection || !$bank)
                 return response()->json(['add-vehicle' => 0, 'message' => 'Please complete your profile', 'token' => $token, 'user' => $user, 'list' => $list], 200);

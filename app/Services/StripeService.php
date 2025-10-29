@@ -152,34 +152,113 @@ class StripeService
 
     // rider connected account methods
     
-    public function  createConnectedAccount(string $email,string $type = 'express')
+    public function  createConnectedAccount(string $email, string $country,string $type = 'express')
     {
         try {
             $account = Account::create([
-                'type' => $type,
-                'email' => $email,
+                'type' => $type, // Express account, Custom UI ke liye best
+                'country' => $country,
+                'email' => $email, // Optional, agar aap pehle se email dena chahte hain
+                'capabilities' => [ // Zaroori capabilities set karein
+                    'card_payments' => ['requested' => true],
+                    'transfers' => ['requested' => true],
+                ],
+                'settings' => [
+                    'payouts' => [
+                        'schedule' => ['interval' => 'manual'], // Manual payouts rakhein shuruat mein
+                    ],
+                ]
             ]);
 
             return $account->id;
         } catch (ApiErrorException $e) {
             return [
                 'success' => false,
-                'error' => $e->getMessage(),
+                'error_message' => $e->getMessage(), // Key ka naam badal diya
+                'http_status' => $e->getHttpStatus(), // HTTP status bhi de sakte hain
             ];
         }
     }
 
-    public function createOnboardingLink(string $accountId, $id)
+    public function UpdateSSN(string $accountId, string $ssn)
     {
         try {
-            $link = AccountLink::create([
-                'account' => $accountId,
-                'refresh_url' => 'https://devcatsoftwares.com/refresh.php/'.$id,
-                'return_url' => 'https://devcatsoftwares.com/redirector.php?link=' . urlencode('https://devcatsoftwares.com/success.php/'.$id),
-                'type' => 'account_onboarding',
-            ]);
+            $account = Account::update(
+                $accountId,
+                [
+                    'individual' => [
+                        // Note: Depending on the country and Stripe's requirements,
+                        // this field might be 'id_number' or 'ssn_last_4'.
+                        // For a full custom flow, using 'id_number' is common for the full number.
+                        'id_number' => $ssn, 
+                    ],
+                ]
+            );
+            return [
+                'success' => true,
+                'account_id' => $account->id,
+                // Stripe ki taraf se kya required hai, woh check karne ke liye
+                'verification_status' => $account->requirements->currently_due ?? [],
+                'details_submitted' => $account->details_submitted,
+            ];
+        } catch (ApiErrorException $e) {
+            return [
+                'success' => false,
+                'error_message' => $e->getMessage(),
+                'http_status' => $e->getHttpStatus(),
+            ];
+        }
+    }
 
-            return $link->url;
+    public function addBankAccount(string $accountId, string $token): array
+    {
+        try {
+            // External Account create karein (token ke zariye)
+            $externalAccount = Account::createExternalAccount(
+                $accountId,
+                [
+                    'external_account' => $token, // Token-based approach
+                ]
+            );
+
+            // Success response
+            return [
+                'success' => true,
+                'external_account_id' => $externalAccount->id, // Bank account ka ID
+                'bank_name' => $externalAccount->bank_name,
+                'last_4' => $externalAccount->last4,
+                'status' => $externalAccount->status, // Verification status
+            ];
+
+        } catch (ApiErrorException $e) {
+            // Error handling
+            return [
+                'success' => false,
+                'error_message' => $e->getMessage(),
+                'http_status' => $e->getHttpStatus(),
+            ];
+        }
+    }
+
+    public function tosAcceptance(string $accountId, string $ip)
+    {
+        try {
+            // Get the current UNIX timestamp
+            $timestamp = time();
+            $account = Account::update(
+                $accountId,
+                [
+                    'tos_acceptance' => [
+                        'date' => $timestamp,
+                        'ip' => $ip,
+                    ],
+                ]
+            );
+
+            return [
+                'success' => true,
+                'message' => 'TOS accepted successfully',
+            ];
         } catch (ApiErrorException $e) {
             return [
                 'success' => false,
@@ -188,26 +267,45 @@ class StripeService
         }
     }
 
-    public function retrieveAccount(string $accountId)
-    {
-        try {
-            $account = Account::retrieve($accountId);
-            if ($account->charges_enabled && $account->payouts_enabled) {
-                return [
-                    'success' => true,
-                    'is_verified'=> true
-                ];
-            } else {
-                return [
-                    'success' => true,
-                    'is_verified'=> false
-                ];
-            }
-        } catch (ApiErrorException $e) {
-            return [
-                'success' => false,
-                'error' => $e->getMessage(),
-            ];
-        }
-    }
+    // public function createOnboardingLink(string $accountId, $id)
+    // {
+    //     try {
+    //         $link = AccountLink::create([
+    //             'account' => $accountId,
+    //             'refresh_url' => 'https://devcatsoftwares.com/refresh.php/'.$id,
+    //             'return_url' => 'https://devcatsoftwares.com/redirector.php?link=' . urlencode('https://devcatsoftwares.com/success.php/'.$id),
+    //             'type' => 'account_onboarding',
+    //         ]);
+
+    //         return $link->url;
+    //     } catch (ApiErrorException $e) {
+    //         return [
+    //             'success' => false,
+    //             'error' => $e->getMessage(),
+    //         ];
+    //     }
+    // }
+
+    // public function retrieveAccount(string $accountId)
+    // {
+    //     try {
+    //         $account = Account::retrieve($accountId);
+    //         if ($account->charges_enabled && $account->payouts_enabled) {
+    //             return [
+    //                 'success' => true,
+    //                 'is_verified'=> true
+    //             ];
+    //         } else {
+    //             return [
+    //                 'success' => true,
+    //                 'is_verified'=> false
+    //             ];
+    //         }
+    //     } catch (ApiErrorException $e) {
+    //         return [
+    //             'success' => false,
+    //             'error' => $e->getMessage(),
+    //         ];
+    //     }
+    // }
 }

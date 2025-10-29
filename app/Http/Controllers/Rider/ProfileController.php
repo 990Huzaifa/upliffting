@@ -411,7 +411,7 @@ class ProfileController extends Controller
             ]);
             $acc_id = $request->stripe_account_id;
             $stripeService = new StripeService();
-            $response = $stripeService->updateSSN($acc_id, $request->social_security_number);
+            $response = $stripeService->updateSSN($acc_id,$user->first_name,$user->last_name, $request->social_security_number);
             DB::commit();
             return response()->json(['user' => $user], 200);
 

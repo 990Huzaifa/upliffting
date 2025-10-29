@@ -170,7 +170,10 @@ class StripeService
                 ]
             ]);
 
-            return $account->id;
+            return [
+                'success' => true,
+                'account_id' => $account->id,
+            ];
         } catch (ApiErrorException $e) {
             return [
                 'success' => false,
@@ -180,7 +183,7 @@ class StripeService
         }
     }
 
-    public function UpdateSSN(string $accountId, string $ssn)
+    public function UpdateSSN(string $accountId, $firstName, $lastName, string $ssn)
     {
         try {
             $account = Account::update(
@@ -190,7 +193,9 @@ class StripeService
                         // Note: Depending on the country and Stripe's requirements,
                         // this field might be 'id_number' or 'ssn_last_4'.
                         // For a full custom flow, using 'id_number' is common for the full number.
-                        'id_number' => $ssn, 
+                        'id_number' => $ssn,
+                        'first_name' => $firstName,  // <--- Naam Yahaan Store Hoga
+                        'last_name' => $lastName, 
                     ],
                 ]
             );

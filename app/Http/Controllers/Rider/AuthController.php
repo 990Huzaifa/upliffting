@@ -117,7 +117,7 @@ class AuthController extends Controller
             }
             Rider::create([
                 'user_id' => $rider->id,
-                'stripe_account_id' => $stripeAccountId,
+                'stripe_account_id' => $stripeAccountId['account_id'],
             ]);
 
             // send sms

@@ -41,7 +41,7 @@ class AuthController extends Controller
                 'device_id' => 'required',
                 'lat' => 'required',
                 'lng' => 'required',
-
+                'country_name' => 'required',
             ], [
                 'first_name.required' => 'First name is required',
                 'last_name.required' => 'Last name is required',
@@ -55,6 +55,7 @@ class AuthController extends Controller
                 'device_id.required' => 'Device ID is required',
                 'lat.required' => 'Lat is required',
                 'lng.required' => 'Lng is required',
+                'country_name.required' => 'Country name is required',
             ]);
 
             $check = User::where('email', $request->email)->where('role', 'rider')->exists();

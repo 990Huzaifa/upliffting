@@ -111,6 +111,10 @@ class AuthController extends Controller
                 $rider->email,
                 $request->country_name
             );
+            // handle error
+            if ($stripeAccountId['success'] === false) {
+                throw new Exception($stripeAccountId['error_message'], 500);
+            }
             Rider::create([
                 'user_id' => $rider->id,
                 'stripe_account_id' => $stripeAccountId,

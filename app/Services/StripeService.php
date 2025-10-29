@@ -152,7 +152,7 @@ class StripeService
 
     // rider connected account methods
     
-    public function  createConnectedAccount(string $email, string $country,string $type = 'express')
+    public function  createConnectedAccount(string $email, string $country,string $type = 'custom')
     {
         try {
             $account = Account::create([

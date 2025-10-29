@@ -378,7 +378,20 @@ class ProfileController extends Controller
             $token = $request->bank_token;
             $stripeService = new StripeService();
             $response = $stripeService->addBankAccount($acc_id, $token);
-
+            // make old banks non default
+            UserBank::where('user_id', $user->id)->update([
+                'is_default' => false
+            ]);
+            // save new bank
+            $bank = UserBank::create([
+                'user_id' => $user->id,
+                'bank_account_id' => $response['external_account_id'],
+                'bank_name' => $response['bank_name'],
+                'last_4' => $response['last_4'],
+                'account_holder_name' => $response['account_holder_name'],
+                'is_default' => true,
+            ]);
+            
             DB::commit();
             return response()->json(['data' => $response], 200);
         }catch(QueryException $e){

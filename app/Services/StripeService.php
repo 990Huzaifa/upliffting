@@ -189,6 +189,7 @@ class StripeService
             $account = Account::update(
                 $accountId,
                 [
+                    'business_type' => "individual",
                     'individual' => [
                         // Note: Depending on the country and Stripe's requirements,
                         // this field might be 'id_number' or 'ssn_last_4'.
@@ -230,6 +231,7 @@ class StripeService
             return [
                 'success' => true,
                 'external_account_id' => $externalAccount->id, // Bank account ka ID
+                'account_holder_name' => $externalAccount->account_holder_name,
                 'bank_name' => $externalAccount->bank_name,
                 'last_4' => $externalAccount->last4,
                 'status' => $externalAccount->status, // Verification status

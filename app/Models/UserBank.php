@@ -11,10 +11,10 @@ class UserBank extends Model
 
     protected $fillable = [
         'user_id',
+        'bank_account_id',
         'bank_name',
         'account_holder_name',
-        'account_number',
-        'account_type',
-        'routing_number',
+        'last_4',
+        'is_default',
     ];
 }

@@ -15,11 +15,11 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
+            $table->longText('bank_account_id');
             $table->string('bank_name');
             $table->string('account_holder_name');
-            $table->string('account_number');
-            $table->string('routing_number');
-            $table->string('account_type');
+            $table->string('last_4');
+            $table->boolean('is_default')->default(true);
             $table->timestamps();
         });
     }

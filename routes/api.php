@@ -189,7 +189,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
             // strip apis
             Route::post('/stripe/add-bank-token', 'addBank');
             Route::post('/stripe/update-ssn', 'addSSN');
-            Route::get('/stripe/tos-acceptance', 'tosAcceptance');
+            Route::post('/stripe/tos-acceptance', 'tosAcceptance');
 
             Route::put('/go-online', 'goOnline');
             Route::put('/is-pet', 'pet');

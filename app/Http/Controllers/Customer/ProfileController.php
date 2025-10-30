@@ -91,7 +91,7 @@ class ProfileController extends Controller
     {
         try{
             $user = Auth::user();
-            $data = User::select('users.first_name','users.last_name','users.email','users.phone','users.avatar')
+            $data = User::select('users.id as id','users.first_name','users.last_name','users.email','users.phone','users.avatar')
             ->join('customers', 'users.id', '=', 'customers.user_id')
             ->where('users.id', $user->id)->first();
             return response()->json(['user' => $data], 200);

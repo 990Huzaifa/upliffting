@@ -18,32 +18,19 @@ class VehicleController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         try {
-            $query = Vehicle::select('vehicles.*','vehicle_type_rates.title as vehicle_type')
-                ->join('vehicle_type_rates', 'vehicles.vehicle_type_rate_id', '=', 'vehicle_type_rates.id')
-                ->join('users', 'vehicles.vehicle_of', '=', 'users.id')
-                ->orderBy('id', 'desc');
+            $user = Auth::user();
+            $data = Vehicle::select('vehicles.*','vehicle_type_rates.title as vehicle_type')
+                ->join('vehicle_types', 'vehicles.vehicle_type_id', '=', 'vehicle_types.id')
+                ->join('vehicle_type_rates', 'vehicle_types.vehicle_type_rate_id', '=', 'vehicle_type_rates.id')
+                ->join('users', 'vehicles.vehicle_of', '=', $user->id)
+                ->orderBy('id', 'desc')->get();
 
-            $perPage = $request->query('per_page', 25);
-            $searchQuery = $request->query('search');
-
-            if (!empty($searchQuery)) {
-                // Apply the search query directly on the main query
-                $query->where('vehicles.title', 'like', '%' . $searchQuery . '%');
-            }
-
-            // Execute the query with pagination
-            $data = $query->paginate($perPage);
-
-            return view('admin.vehicles.index', compact('data'));
-
+            return response()->json($data, 200);
         } catch (Exception $e) {
-            Session::flash('error', [
-                'text' => $e->getMessage(),
-            ]);
-            return redirect()->back();
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
@@ -116,32 +103,26 @@ class VehicleController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function activateVehicle($id): JsonResponse
     {
-        //
-    }
+        try{
+            $user = Auth::user();
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
+            // make all vehicles inactive
+            Vehicle::where('user_id', $user->id)->update([
+                'is_driving' => false
+            ]);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
+            // make vehicle active
+            $data = Vehicle::where('id', $id)->update([
+                'is_driving' => true
+            ]);
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+            return response()->json(['data' => $data,'message' => 'vehicle activated successfully'], 200);
+        }catch(QueryException $e){
+            return response()->json(['DB error' => $e->getMessage()], 500);
+        }catch(Exception $e){
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 }

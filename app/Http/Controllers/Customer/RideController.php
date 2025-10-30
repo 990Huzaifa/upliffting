@@ -367,7 +367,7 @@ class RideController extends Controller
             ]);
             $ride = Rides::findOrFail($request->ride_id);
             // notify rider by fcm
-            $title = 'Your payment is '.$request->final_fare. 'successful';
+            $title = 'Your payment is '.$request->final_fare. ' successful';
             $body = 'Thank you for your great service!';
             $firebaseService = new FirebaseService();
             $rider_fcm = User::where('id', $ride->rider_id)->value('fcm_id');

@@ -193,7 +193,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
             Route::put('/go-online', 'goOnline');
             Route::put('/is-pet', 'pet');
-            Route::get('/activate-vehicle/{id}', 'activateVehicle');
             Route::get('/about', 'about');
             Route::get('/pnp', 'pnp');
             Route::get('/tnc', 'tnc');
@@ -206,6 +205,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         // vehicle apis
         Route::get('vehicle-type', [VehicleTypeRateController::class, 'list1']);
         Route::apiResource('/vehicle', RiderVehicleController::class)->only('index', 'store', 'update', 'destroy');
+        Route::get('/activate-vehicle/{id}', [RiderVehicleController::class,'activateVehicle']);
         Route::post('upload-vehicle-inspection', [VehicleInspectionController::class, 'storeOrUpdate']);
 
 

@@ -183,29 +183,6 @@ class ProfileController extends Controller
         }
     }
 
-    public function activateVehicle($id): JsonResponse
-    {
-        try{
-            $user = Auth::user();
-
-            // make all vehicles inactive
-            Vehicle::where('user_id', $user->id)->update([
-                'is_driving' => false
-            ]);
-
-            // make vehicle active
-            $data = Vehicle::where('id', $id)->update([
-                'is_driving' => true
-            ]);
-
-            return response()->json(['data' => $data,'message' => 'vehicle activated successfully'], 200);
-        }catch(QueryException $e){
-            return response()->json(['DB error' => $e->getMessage()], 500);
-        }catch(Exception $e){
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
-    }
-
     public function about(): JsonResponse
     {   
         try{

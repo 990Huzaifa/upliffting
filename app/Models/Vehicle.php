@@ -12,6 +12,7 @@ class Vehicle extends Model
 
     protected $fillable = [
         'vehicle_of',
+        'vehicle_type_rate_id',
         'registration_certificate',
         'registration_number',
         'insurance_validity',
@@ -20,7 +21,6 @@ class Vehicle extends Model
         'model',
         'year',
         'color',
-        'vehicle_type_rate_id',
         'photos',
         'approved_by',
         'approved_at',

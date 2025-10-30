@@ -25,7 +25,8 @@ class VehicleController extends Controller
             $data = Vehicle::select('vehicles.*','vehicle_types.title as vehicle_type')
             ->join('vehicle_type_rates', 'vehicles.vehicle_type_rate_id', '=', 'vehicle_type_rates.id')
             ->join('vehicle_types', 'vehicle_type_rates.vehicle_type_id', '=', 'vehicle_types.id')
-            ->join('users', 'vehicles.vehicle_of', '=', $user->id)
+            ->join('users', 'vehicles.vehicle_of', '=', 'users.id')
+            ->where('users.id', $user->id)
             ->orderBy('id', 'desc')->get();
 
             return response()->json($data, 200);

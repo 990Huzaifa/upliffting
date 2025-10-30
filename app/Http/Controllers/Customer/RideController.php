@@ -376,6 +376,7 @@ class RideController extends Controller
                 'ride_id' => $ride->id,
                 'amount' => $request->final_fare,
                 'tip_amount' => $request->tip_amount,
+                'status' => 'payment_completed',
             ];
             broadcast(new RideAccepted($title, $ride->id, $data));
 

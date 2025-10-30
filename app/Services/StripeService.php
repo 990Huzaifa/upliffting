@@ -183,13 +183,14 @@ class StripeService
         }
     }
 
-    public function UpdateSSN(string $accountId, $firstName, $lastName, string $ssn)
+    public function UpdateSSN(string $accountId, $firstName, $lastName, string $ssn, string $phone): array
     {
         try {
             $account = Account::update(
                 $accountId,
                 [
                     'business_type' => "individual",
+                    'phone' => $phone,
                     'individual' => [
                         // Note: Depending on the country and Stripe's requirements,
                         // this field might be 'id_number' or 'ssn_last_4'.
@@ -197,6 +198,10 @@ class StripeService
                         'id_number' => $ssn,
                         'first_name' => $firstName,  // <--- Naam Yahaan Store Hoga
                         'last_name' => $lastName, 
+                    ],
+                    'business_profile' => [
+                        "product_description" => "Ride sharing services",
+                        'mcc' => '5734', // Example MCC (Merchant Category Code). Ye industry ke hisaab se badlega.
                     ],
                 ]
             );

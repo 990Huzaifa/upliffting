@@ -377,7 +377,7 @@ class RideController extends Controller
                 'amount' => $request->final_fare,
                 'tip_amount' => $request->tip_amount,
             ];
-            broadcast(new RideAccepted($title, $body, $data));
+            broadcast(new RideAccepted($title, $ride->id, $data));
 
             return response()->json(['message' => 'Payment and tip processed successfully.'], 200);
         } catch (QueryException $e) {

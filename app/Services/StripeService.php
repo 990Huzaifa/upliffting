@@ -10,6 +10,7 @@ use Stripe\SetupIntent;
 use Stripe\Stripe;
 use Stripe\PaymentIntent;
 use Stripe\Customer;
+use Stripe\File;
 use Stripe\Exception\ApiErrorException;
 
 class StripeService
@@ -221,6 +222,57 @@ class StripeService
         }
     }
 
+    public function UpdateInfo(
+        string $accountId, $firstName, $lastName, string $ssn, string $phone,
+        int $dobDay,           // Date of Birth: Day
+        int $dobMonth,         // Date of Birth: Month
+        int $dobYear,          // Date of Birth: Year
+        array $addressData
+        ): array
+    {
+        try {
+            $account = Account::update(
+                $accountId,
+                [
+                    'business_type' => "individual",
+                    'phone' => $phone,
+                    'individual' => [
+                        // Note: Depending on the country and Stripe's requirements,
+                        // this field might be 'id_number' or 'ssn_last_4'.
+                        // For a full custom flow, using 'id_number' is common for the full number.
+                        'id_number' => $ssn,
+                        'first_name' => $firstName,  // <--- Naam Yahaan Store Hoga
+                        'last_name' => $lastName, 
+                        'dob' => [
+                            'day' => $dobDay,
+                            'month' => $dobMonth,
+                            'year' => $dobYear,
+                        ],
+                        // 2. Address
+                        'address' => $addressData,
+                    ],
+                    'business_profile' => [
+                        "product_description" => "Ride sharing services",
+                        'mcc' => '5734', // Example MCC (Merchant Category Code). Ye industry ke hisaab se badlega.
+                    ],
+                ]
+            );
+            return [
+                'success' => true,
+                'account_id' => $account->id,
+                // Stripe ki taraf se kya required hai, woh check karne ke liye
+                'verification_status' => $account->requirements->currently_due ?? [],
+                'details_submitted' => $account->details_submitted,
+            ];
+        } catch (ApiErrorException $e) {
+            return [
+                'success' => false,
+                'error_message' => $e->getMessage(),
+                'http_status' => $e->getHttpStatus(),
+            ];
+        }
+    }
+
     public function addBankAccount(string $accountId, string $token): array
     {
         try {
@@ -252,6 +304,38 @@ class StripeService
         }
     }
 
+    public function uploadVerificationDocument(string $accountId, string $filePath): array
+    {
+        try {
+            // Step A: Upload the file to Stripe
+            $uploadedFile = File::create([
+                'purpose' => 'identity_document',
+                'file' => fopen($filePath, 'r'), // Open the file resource
+            ]);
+
+            // Step B: Attach the uploaded file to the account
+            $account = Account::update(
+                $accountId,
+                [
+                    'verification' => [
+                        'document' => $uploadedFile->id,
+                    ],
+                ]
+            );
+            return [
+                'success' => true,
+                'file_id' => $uploadedFile->id,
+                'verification_status' => $account->requirements->currently_due ?? [],
+            ];
+        } catch (ApiErrorException $e) {
+            return [
+                'success' => false,
+                'error_message' => $e->getMessage(),
+                'http_status' => $e->getHttpStatus(),
+            ];
+        }
+    }
+    
     public function tosAcceptance(string $accountId, string $ip)
     {
         try {

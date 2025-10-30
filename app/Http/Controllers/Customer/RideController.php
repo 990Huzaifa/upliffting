@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Events\AddStopRequest;
+use App\Events\RideAccepted;
 use App\Events\RideCancelled;
 use App\Http\Controllers\Controller;
 use App\Jobs\SearchNearbyRidersJob;
@@ -371,6 +372,8 @@ class RideController extends Controller
             $firebaseService = new FirebaseService();
             $rider_fcm = User::where('id', $ride->rider_id)->value('fcm_id');
             $firebaseService->sendToDevice('rider', $rider_fcm, $title, $body);
+
+            broadcast(new RideAccepted($title, $body, $ride));
 
             return response()->json(['message' => 'Payment and tip processed successfully.'], 200);
         } catch (QueryException $e) {

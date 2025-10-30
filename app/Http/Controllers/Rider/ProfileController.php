@@ -411,10 +411,13 @@ class ProfileController extends Controller
             $validator = Validator::make($request->all(),[
                 'stripe_account_id' => 'required',
                 'social_security_number' => 'required|numeric',
+                'verification_document' => 'nullable|file|mimes:jpg,jpeg,png,pdf',
             ],[
                 'stripe_account_id.required' => 'Stripe account ID is required',
                 'social_security_number.required' => 'Social security number is required',
                 'social_security_number.numeric' => 'Social security number must be numeric',
+                'verification_document.file' => 'Verification document must be a file',
+                'verification_document.mimes' => 'Verification document must be a file of type: jpg, jpeg, png, pdf',
             ]);
             
             if($validator->fails())throw new Exception($validator->errors()->first(),400);
@@ -422,9 +425,30 @@ class ProfileController extends Controller
             $user->update([
                 'social_security_number' => $request->social_security_number
             ]);
+
+            // requested data
+
+            // $addressData = [
+            //     'line1' => $user->address_line1 ?? '123 Main St',
+            //     'line2' => $user->address_line2 ?? '',
+            //     'city' => $user->city ?? 'Anytown',
+            //     'state' => $user->state ?? 'CA',
+            //     'postal_code' => $user->postal_code ?? '12345',
+            //     'country' => $user->country ?? 'US',
+            // ];
+
+            // get and move file 
+            $file_path = null;
+            if($request->hasFile('verification_document')){
+                $file = $request->file('verification_document');
+                $file_name = '-doc-' . time() . '.' . $file->getClientOriginalExtension();
+                $file->move(public_path('ssn-documents'), $file_name);
+                $file_path = 'stripe-driver-documents/' . $file_name;  
+            }
             $acc_id = $request->stripe_account_id;
             $stripeService = new StripeService();
-            $response = $stripeService->updateSSN($acc_id,$user->first_name,$user->last_name, $request->social_security_number);
+            // $response = $stripeService->updateInfo($acc_id,$user->first_name,$user->last_name, $request->social_security_number, $user->phone,$file_path);
+            $response = $stripeService->updateSSN($acc_id,$user->first_name,$user->last_name, $request->social_security_number, $user->phone);
             DB::commit();
             return response()->json(['user' => $user], 200);
 

@@ -22,7 +22,7 @@ class VehicleController extends Controller
     {
         try {
             $user = Auth::user();
-            $data = Vehicle::select('vehicles.*','vehicle_type_rates.title as vehicle_type')
+            $data = Vehicle::select('vehicles.*','vehicle_types.title as vehicle_type')
                 ->join('vehicle_types', 'vehicles.vehicle_type_id', '=', 'vehicle_types.id')
                 ->join('vehicle_type_rates', 'vehicle_types.vehicle_type_rate_id', '=', 'vehicle_type_rates.id')
                 ->join('users', 'vehicles.vehicle_of', '=', $user->id)

@@ -101,6 +101,22 @@ class VehicleController extends Controller
         }
     }
 
+    public function show($id): JsonResponse
+    {
+        try {
+            $user = Auth::user();
+            $data = Vehicle::select('vehicles.*','vehicle_types.title as vehicle_type')
+            ->join('vehicle_type_rates', 'vehicles.vehicle_type_rate_id', '=', 'vehicle_type_rates.id')
+            ->join('vehicle_types', 'vehicle_type_rates.vehicle_type_id', '=', 'vehicle_types.id')
+            ->join('users', 'vehicles.vehicle_of', '=', 'users.id')
+            ->where('vehicles.id', $id)->first();
+
+            return response()->json($data, 200);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
     /**
      * Display the specified resource.
      */

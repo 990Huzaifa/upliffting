@@ -23,46 +23,66 @@ class VehicleInspectionController extends Controller
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
-        //
+        try {
+            $user = Auth::user();
+            DB::beginTransaction();
+
+            // Validate incoming files
+            $rules = [];
+            $fields = [
+                'headlights', 'airlights', 'indicators', 'stop_lights',
+                'windshield', 'windshield_wipers', 'safty_belt', 'tires', 'speedometer'
+            ];
+            foreach ($fields as $field) {
+                $rules['vehicle_id'] = 'required|exists:vehicles,id';
+                $rules["{$field}"] = 'nullable|array';
+                $rules["{$field}.*"] = 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048';
+            }
+
+            $validator = Validator::make($request->all(), $rules);
+            if ($validator->fails()) {
+                throw new Exception($validator->errors()->first(), 400);
+            }
+
+
+            $inspection = VehicleInspection::firstOrNew(['vehicle_id' => $request->vehicle_id]);
+
+            // Loop through each image group
+            foreach ($fields as $field) {
+                if ($request->has($field)) {
+                    // Delete existing images if any
+                    $existing = json_decode($inspection->$field, true) ?: [];
+                    foreach ($existing as $path) {
+                        $fullPath = public_path($path);
+                        if (file_exists($fullPath)) {
+                            @unlink($fullPath);
+                        }
+                    }
+
+                    // Upload new images
+                    $uploaded = $this->uploadImages($request->$field, $user);
+                    $inspection->$field = json_encode($uploaded);
+                }
+            }
+
+            // Save or update inspection
+            $inspection->save();
+
+            DB::commit();
+            return response()->json(['user' => $user, 'inspection-data' => $inspection], 200);
+
+        } catch (QueryException $e) {
+            DB::rollBack();
+            return response()->json(['DB error' => $e->getMessage()], 500);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => $e->getMessage()], is_int($e->getCode()) ? $e->getCode() : 500);
+        }
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
-
+    // inital function onboarding
     public function storeOrUpdate(Request $request): JsonResponse
     {
         try {
@@ -121,6 +141,7 @@ class VehicleInspectionController extends Controller
             return response()->json(['error' => $e->getMessage()], is_int($e->getCode()) ? $e->getCode() : 500);
         }
     }
+    
 
     private function uploadImages($images, $user)
     {

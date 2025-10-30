@@ -204,9 +204,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         // vehicle apis
         Route::get('vehicle-type', [VehicleTypeRateController::class, 'list1']);
-        Route::apiResource('/vehicle', RiderVehicleController::class)->only('index', 'store', 'update', 'destroy');
+        Route::apiResource('/vehicle', RiderVehicleController::class)->only('index', 'store','show', 'update', 'destroy');
         Route::get('/activate-vehicle/{id}', [RiderVehicleController::class,'activateVehicle']);
         Route::post('upload-vehicle-inspection', [VehicleInspectionController::class, 'storeOrUpdate']);
+        Route::post('upload-inspection/{id}', [VehicleInspectionController::class, 'store']);
 
 
         // ride

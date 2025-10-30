@@ -193,7 +193,7 @@ class RideController extends Controller
             SearchNearbyRidersJob::dispatch($ride->id)->onQueue('high');
 
 
-            return response()->json(['message' => 'Finding ride for you.'], 200);
+            return response()->json(['message' => 'Finding ride for you.', 'data' => $ride], 200);
 
         } catch (QueryException $e) {
             return response()->json(['DB error' => $e->getMessage()], 500);

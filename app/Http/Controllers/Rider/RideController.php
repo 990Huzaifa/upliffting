@@ -71,7 +71,9 @@ class RideController extends Controller
             // retrive fcm of customer
             $customer_fcm = User::where('id', $ride->customer_id)->value('fcm_id');
             $firebase = new FirebaseService();
-
+            if($ride->rider_id != null){
+                return response()->json(['message' => 'Ride already accepted by another rider'], 200);
+            }
             // update ride data 
             $ride->update([
                 'rider_id' => $user->id,

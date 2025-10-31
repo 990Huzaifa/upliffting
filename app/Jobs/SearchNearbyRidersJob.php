@@ -117,7 +117,7 @@ class SearchNearbyRidersJob implements ShouldQueue, ShouldBeUnique
         ];
 
         $result = DB::select($query, $bindings);
-        Log::debug('dekho mily riders with all status', [
+        Log::debug('dekho mily riders with all status final case', [
                 'rideId' => $this->rideId,
                 'count' => count($result),
             ]);

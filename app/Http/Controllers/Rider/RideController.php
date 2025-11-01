@@ -41,23 +41,23 @@ class RideController extends Controller
             switch ($status) {
                 case 'on a way':
                     if ($ride->status != 'finding')
-                        throw new Exception('Ride not available', 400);
+                        return response()->json(['message' => 'Ride not available'], 200);
                     break;
                 case 'arrived':
                     if ($ride->status != 'on a way')
-                        throw new Exception('Ride not available', 400);
+                        return response()->json(['message' => 'Ride not available'], 200);
                     break;
                 case 'started':
                     if ($ride->status != 'arrived')
-                        throw new Exception('Ride not available', 400);
+                        return response()->json(['message' => 'Ride not available'], 200);
                     break;
                 case 'completed':
                     if ($ride->status != 'started')
-                        throw new Exception('Ride not available', 400);
+                        return response()->json(['message' => 'Ride not available'], 200);
                     break;
                 case 'end trip':
                     if ($ride->status != 'completed')
-                        throw new Exception('Ride not available', 400);
+                        return response()->json(['message' => 'Ride not available'], 200);
                     break;
                 default:
                     throw new Exception('Invalid status', 400);

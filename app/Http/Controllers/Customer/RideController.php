@@ -428,7 +428,7 @@ class RideController extends Controller
             ]);
 
             // update rider overall rating
-            $rider = Rider::find($ride->rider_id);
+            $rider = Rider::where('user_id', $ride->rider_id)->first();
             if ($rider) {
                 $totalRiderRatings = RatingReview::where('rider_id', $ride->rider_id)
                     ->where('send_by', 'customer_to_rider')

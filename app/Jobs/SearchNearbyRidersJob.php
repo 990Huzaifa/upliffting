@@ -6,6 +6,7 @@ namespace App\Jobs;
 use App\Events\RideAccepted;
 use App\Events\RidersNotified;
 use App\Events\RideSearchProgress;
+use App\Models\Customer;
 use App\Models\Rides;
 use App\Models\RidesDropOff;
 use App\Models\User;
@@ -243,12 +244,14 @@ class NotifyRidersJob implements ShouldQueue, ShouldBeUnique
         $customerName = $customer ? $customer->first_name . ' ' . $customer->last_name : 'Customer';
         $title = 'New Ride Request Nearby';
         $dropoffs = RidesDropOff::select('drop_location', 'ride_id')->where('ride_id', $ride->id)->get()->toArray();
+        $customer_rating = Customer::where('user_id', $ride->customer_id)->value('current_rating');
         $data = [
             'rideId' => $ride->id,
             'rideStatus' => $ride->status,
             'customerName' => $customerName,
             'customerAvatar' => $customer ? $customer->avatar : null,
             'customerPhone' => $customer->phone,
+            'customerRating' => $customer_rating,
             'baseFare' => $ride->base_fare,
             'pickupLat' => $ride->pickup_lat,
             'pickupLng' => $ride->pickup_lng,

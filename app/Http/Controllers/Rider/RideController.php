@@ -95,6 +95,7 @@ class RideController extends Controller
                 'riderPhone' => $user->phone,
                 'riderLat' => $user->lat,
                 'riderLng' => $user->lng,
+                'riderRating' => $user->rating,
                 'vehicleInfo' => [
                     'id' => $vehicle->id,
                     'make' => $vehicle->make,
@@ -421,8 +422,8 @@ class RideController extends Controller
                 'review' => $request->review ?? null,
             ]);
 
-            // update rider overall rating
-            $customer = Customer::find($ride->rider_id);
+            // update customer overall rating
+            $customer = Customer::where('user_id', $ride->customer_id)->first();
             if ($customer) {
                 $totalRiderRatings = RatingReview::where('customer_id', $ride->customer_id)
                     ->where('send_by', 'rider_to_customer')

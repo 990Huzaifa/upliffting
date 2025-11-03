@@ -216,6 +216,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::post('cancel-ride/{id}', 'cancelRide');
             Route::post('add-stop-request/{id}', 'addStopRequest');
             Route::get('request-ride-info','requestRideInfo');
+            Route::post('rate-ride/{id}', 'rateRide');
         });
 
         

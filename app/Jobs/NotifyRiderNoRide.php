@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Events\NoRider;
 use App\Events\RidersNotified;
 use App\Models\Rides;
 use DB;
@@ -42,11 +43,10 @@ class NotifyRiderNoRide implements ShouldQueue
                 'rideId' => $ride->id,
                 'rideStatus' => $ride->status,
             ];
-            broadcast(new RidersNotified(
+            broadcast(new NoRider(
                 "No Rides Nearby",
                 $ride->id,
-                $riderIds,
-                $data
+                $riderIds
             ));
             Log::debug('NotifyRidersNoRide: riders found', [
                 'rideId' => $this->rideId,

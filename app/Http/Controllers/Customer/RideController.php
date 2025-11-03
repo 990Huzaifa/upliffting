@@ -399,7 +399,7 @@ class RideController extends Controller
                 throw new Exception('You are not authorized to rate this ride.', 403);
             }
 
-            if ($ride->status !== 'completed') {
+            if ($ride->status !== 'end trip') {
                 throw new Exception('You can only rate a completed ride.', 400);
             }
 

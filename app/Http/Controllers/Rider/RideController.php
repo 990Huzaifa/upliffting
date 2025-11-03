@@ -41,26 +41,26 @@ class RideController extends Controller
             switch ($status) {
                 case 'on a way':
                     if ($ride->status != 'finding')
-                        return response()->json(['message' => 'Ride not available'], 200);
+                        return response()->json(['message' => 'Ride not available'], 400);
                     break;
                 case 'arrived':
                     if ($ride->status != 'on a way')
-                        return response()->json(['message' => 'Ride not available'], 200);
+                        return response()->json(['message' => 'Ride not available'], 400);
                     break;
                 case 'started':
                     if ($ride->status != 'arrived')
-                        return response()->json(['message' => 'Ride not available'], 200);
+                        return response()->json(['message' => 'Ride not available'], 400);
                     break;
                 case 'completed':
                     if ($ride->status != 'started')
-                        return response()->json(['message' => 'Ride not available'], 200);
+                        return response()->json(['message' => 'Ride not available'], 400);
                     break;
                 case 'end trip':
                     if ($ride->status != 'completed')
-                        return response()->json(['message' => 'Ride not available'], 200);
+                        return response()->json(['message' => 'Ride not available'], 400);
                     break;
                 default:
-                    throw new Exception('Invalid status', 400);
+                    throw new Exception('Ride is Cancelled', 400);
             }
 
 
@@ -185,7 +185,7 @@ class RideController extends Controller
         } catch (QueryException $e) {
             return response()->json(['DB error' => $e->getMessage()], 500);
         } catch (Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json(['error' => $e->getMessage()], $e->getCode() ?? 500);
         }
 
 

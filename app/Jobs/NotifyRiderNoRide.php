@@ -33,8 +33,11 @@ class NotifyRiderNoRide implements ShouldQueue
         if (!$ride || $ride->status !== 'finding' || $ride->status === 'cancelled') {
             $riders = $this->findNearbyRiders($ride);
             $riderIds = collect($riders)->pluck('id')->toArray();
-            
             $riderIds = collect($riders)->pluck('id')->toArray();
+            $acceptedRiderId =  $ride->rider_id;
+            // remove accpepted riders id from array
+            $riderIds = array_diff($riderIds, [$acceptedRiderId]);
+
             $data = [
                 'rideId' => $ride->id,
                 'rideStatus' => $ride->status,
@@ -45,6 +48,9 @@ class NotifyRiderNoRide implements ShouldQueue
                 $riderIds,
                 $data
             ));
+            Log::debug('NotifyRidersNoRide: riders found', [
+                'rideId' => $this->rideId,
+            ]);
         }
     }
 
@@ -88,10 +94,7 @@ class NotifyRiderNoRide implements ShouldQueue
         ];
 
         $result = DB::select($query, $bindings);
-        Log::debug('NotifyRidersNoRide: riders found', [
-            'rideId' => $this->rideId,
-            'count' => count($result),
-        ]);
+        
         return $result;
     }
 }

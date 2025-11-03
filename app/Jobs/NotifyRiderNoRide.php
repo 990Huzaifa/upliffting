@@ -10,6 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Log;
 
 class NotifyRiderNoRide implements ShouldQueue
 {
@@ -87,6 +88,10 @@ class NotifyRiderNoRide implements ShouldQueue
         ];
 
         $result = DB::select($query, $bindings);
+        Log::debug('NotifyRidersNoRide: riders found', [
+            'rideId' => $this->rideId,
+            'count' => count($result),
+        ]);
         return $result;
     }
 }

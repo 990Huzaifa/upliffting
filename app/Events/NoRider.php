@@ -10,7 +10,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class NoRider
+class NoRider implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 

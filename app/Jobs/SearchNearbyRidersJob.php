@@ -10,6 +10,7 @@ use App\Models\Customer;
 use App\Models\Rides;
 use App\Models\RidesDropOff;
 use App\Models\User;
+use App\Jobs\NotifyRiderNoRide;
 use App\Services\FirebaseService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -182,6 +183,8 @@ class SearchNearbyRidersJob implements ShouldQueue, ShouldBeUnique
                 $this->maxRadius,
                 'expired'
             ));
+
+            NotifyRiderNoRide::dispatch($ride->id);
         }
     }
 }

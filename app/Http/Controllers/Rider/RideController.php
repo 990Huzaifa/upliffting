@@ -389,11 +389,11 @@ class RideController extends Controller
         try {
             $user = Auth::user();
             $ride = Rides::findOrFail($id);
-            if ($ride->customer_id !== $user->id) {
+            if ($ride->rider_id !== $user->id) {
                 throw new Exception('You are not authorized to rate this ride.', 403);
             }
 
-            if ($ride->status !== 'completed') {
+            if ($ride->status !== 'end trip') {
                 throw new Exception('You can only rate a completed ride.', 400);
             }
 

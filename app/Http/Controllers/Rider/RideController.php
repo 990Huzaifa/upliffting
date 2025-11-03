@@ -7,6 +7,7 @@ use App\Events\RideAccepted;
 use App\Events\RideCancelled;
 use App\Http\Controllers\Controller;
 use App\Jobs\HandleRiderResponseJob;
+use App\Jobs\NotifyRiderNoRide;
 use App\Models\Customer;
 use App\Models\Payment;
 use App\Models\RatingReview;
@@ -113,6 +114,7 @@ class RideController extends Controller
                 // update ride started at in UTC
                 $ride->update(['stated_at' => now('UTC')]);
                 EmitRiderLocationJob::dispatch($id, $user->id);
+                NotifyRiderNoRide::dispatch($id);
             } elseif ($status == 'arrived') {
                 
                 $title = 'Driver Arrived!';

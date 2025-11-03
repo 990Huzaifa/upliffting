@@ -6,6 +6,7 @@ use App\Events\AddStopRequest;
 use App\Events\RideAccepted;
 use App\Events\RideCancelled;
 use App\Http\Controllers\Controller;
+use App\Jobs\NotifyRiderNoRide;
 use App\Jobs\SearchNearbyRidersJob;
 use App\Models\Payment;
 use App\Models\PromoCode;
@@ -238,6 +239,8 @@ class RideController extends Controller
                 $ride->id,
                 $request->reason
             ));
+
+            NotifyRiderNoRide::dispatch($id);
 
             return response()->json(['message' => 'Ride cancelled successfully.'], 200);
 

@@ -79,7 +79,7 @@ class NotifyRiderNoRide implements ShouldQueue
             AND NOT EXISTS (
                 SELECT 1 FROM rides 
                 WHERE rides.rider_id = users.id 
-                    AND rides.status IN ('on a way', 'arrived', 'started', 'completed')
+                    AND rides.status IN ('on a way', 'arrived', 'started', 'completed','payment success')
             )
             HAVING distance <= ?
             ORDER BY distance ASC

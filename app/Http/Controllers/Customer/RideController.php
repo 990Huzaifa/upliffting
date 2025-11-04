@@ -369,6 +369,10 @@ class RideController extends Controller
                 'percentage' => $request->tip_percentage ?? 0,
             ]);
             $ride = Rides::findOrFail($request->ride_id);
+            // update ride status
+            $ride->update([
+                'status' => 'payment success',
+            ]);
             // notify rider by fcm
             $title = 'Your payment is '.$request->final_fare. ' successful';
             $body = 'Thank you for your great service!';
@@ -379,7 +383,7 @@ class RideController extends Controller
                 'ride_id' => $ride->id,
                 'amount' => $request->final_fare,
                 'tip_amount' => $request->tip_amount,
-                'status' => 'payment_completed',
+                'status' => 'payment success',
             ];
             broadcast(new RideAccepted($title, $ride->id, $data));
 

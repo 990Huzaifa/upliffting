@@ -57,7 +57,7 @@ class RideController extends Controller
                         return response()->json(['message' => 'Ride not available'], 400);
                     break;
                 case 'end trip':
-                    if ($ride->status != 'completed')
+                    if ($ride->status != 'payment success')
                         return response()->json(['message' => 'Ride not available'], 400);
                     break;
                 default:

@@ -520,8 +520,22 @@ class AuthController extends Controller
                 'lat' => $request->lat,
                 'lng' => $request->lng
             ]);
+
+            $testRiders = [
+                ['lat' => 24.869000, 'lng' => 67.083500, 'distance' => 0.25],
+                ['lat' => 24.870900, 'lng' => 67.078200, 'distance' => 0.52],
+                ['lat' => 24.862300, 'lng' => 67.085400, 'distance' => 0.71],
+                ['lat' => 24.864700, 'lng' => 67.075900, 'distance' => 1.22],
+                ['lat' => 24.858500, 'lng' => 67.083000, 'distance' => 1.85],
+                ['lat' => 24.873200, 'lng' => 67.088500, 'distance' => 2.31],
+            ];
             $riders = getNearbyRiders($request->lat, $request->lng);
-            return response()->json(['message' => 'Location updated successfully','nearby_riders' => $riders], 200);   
+            $merged = array_merge($riders, $testRiders);
+
+            return response()->json([
+                'message' => 'Location updated successfully',
+                'nearby_riders' => $merged
+            ], 200);   
         }catch(QueryException $e){
             return response()->json(['DB error' => $e->getMessage()], 500);
         }catch(Exception $e){

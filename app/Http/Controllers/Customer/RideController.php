@@ -367,6 +367,7 @@ class RideController extends Controller
             $payment->update([
                 'payment_method_id' => $request->payment_method_id,
                 'amount' => $request->final_fare,
+                'tip' => $request->tip_amount,
                 'status' => 'completed',
             ]);
             $tip = RiderTip::create([

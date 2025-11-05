@@ -14,6 +14,7 @@ class Payment extends Model
         'customer_id',
         'rider_id',
         'amount',
+        'tip',
         'payment_method_id',
         'transaction_id',
         'status',

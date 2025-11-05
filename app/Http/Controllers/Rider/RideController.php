@@ -116,11 +116,11 @@ class RideController extends Controller
                 $ride->update(['stated_at' => now('UTC')]);
                 EmitRiderLocationJob::dispatch($id, $user->id);
                 NotifyRiderNoRide::dispatch($id);
+                $firebase->sendToDevice('customer',$customer_fcm,$title,"Driver is comming for you",['rideId' => $id,'status' => $status, 'type' =>'ride_status']);
             } elseif ($status == 'arrived') {
                 
                 $title = 'Driver Arrived!';
-                $firebase->sendToDevice(
-                    'customer',$customer_fcm,$title,"Driver is waiting for you",['rideId' => $id,'status' => $status,]);
+                $firebase->sendToDevice('customer',$customer_fcm,$title,"Driver is waiting for you",['rideId' => $id,'status' => $status, 'type' =>'ride_status']);
 
                 broadcast(new RideAccepted(
                     $title,
@@ -129,8 +129,7 @@ class RideController extends Controller
                 ));
             } elseif ($status == 'started') {
                 $title = 'Ride Started!';
-                $firebase->sendToDevice(
-                    'customer',$customer_fcm,$title,"Your ride has started now",['rideId' => $id,'status' => $status,]);
+                $firebase->sendToDevice('customer',$customer_fcm,$title,"Your ride has started now",['rideId' => $id,'status' => $status,'type' =>'ride_status']);
                 broadcast(new RideAccepted(
                     $title,
                     $ride->id,
@@ -171,8 +170,7 @@ class RideController extends Controller
                     ]
                 ];
                 $title = 'Ride Completed!';
-                $firebase->sendToDevice(
-                    'customer',$customer_fcm,$title,"Make payment now",['rideId' => $updatedRide->id,'status' => $status,]);
+                $firebase->sendToDevice('customer',$customer_fcm,$title,"Make payment now",['rideId' => $updatedRide->id,'status' => $status,]);
                 broadcast(new RideAccepted(
                     $title,
                     $ride->id,
@@ -182,6 +180,8 @@ class RideController extends Controller
                 $ride->update([
                     'status' => 'end trip',
                 ]);
+                $rider_fcm = User::find($ride->rider_id)->value('fcm_id');
+                $firebase->sendToDevice('rider',$rider_fcm,'Trip has ended',"Review your customer",['rideId' => $id,'status' => $status, 'type' =>'feedback']);
             }
 
             return response()->json(['message' => 'Ride updated successfully'], 200);
@@ -228,6 +228,10 @@ class RideController extends Controller
                 $ride->id,
                 $request->reason
             ));
+
+            $firebase = new FirebaseService();
+            $customer_fcm = User::find($ride->customer_id)->value('fcm_id');
+            $firebase->sendToDevice('customer',$customer_fcm,'Ride cancelled',"rider has cancelled the ride",['rideId' => $ride->id,'status' => 'cancelled',]);
             
             return response()->json(['message' => 'Ride cancelled successfully'], 200);
         } catch (QueryException $e) {

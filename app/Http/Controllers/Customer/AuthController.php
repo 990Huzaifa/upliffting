@@ -534,7 +534,7 @@ class AuthController extends Controller
 
             return response()->json([
                 'message' => 'Location updated successfully',
-                'nearby_riders' => $merged
+                'nearby_riders' => []
             ], 200);   
         }catch(QueryException $e){
             return response()->json(['DB error' => $e->getMessage()], 500);

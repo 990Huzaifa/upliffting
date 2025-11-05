@@ -21,6 +21,7 @@ use App\Models\Vehicle;
 use App\Models\VehicleType;
 use App\Models\VehicleTypeRate;
 use App\Services\FirebaseService;
+use App\Services\StripeService;
 use Illuminate\Support\Facades\Auth;
 use Exception;
 use Illuminate\Database\QueryException;
@@ -356,6 +357,13 @@ class RideController extends Controller
             if ($payment->status === 'completed') {
                 throw new Exception('This payment has already been completed.', 400);
             }
+            // here strip payment call start
+            // $stripe_payment_method_id = UserAccount::where('id', $request->payment_method_id)->value('stripe_payment_method_id');
+            // $stripe_account_id = Rider::where('id', $payment->rider_id)->value('stripe_account_id');
+            
+            // $stripeService = new StripeService();
+            // $res = $stripeService->chargeAndTransfer($stripe_payment_method_id, $request->final_fare, $stripe_account_id, 'usd', $request->tip_amount);
+            // end here
             $payment->update([
                 'payment_method_id' => $request->payment_method_id,
                 'amount' => $request->final_fare,
@@ -378,7 +386,9 @@ class RideController extends Controller
             $body = 'Thank you for your great service!';
             $firebaseService = new FirebaseService();
             $rider_fcm = User::where('id', $ride->rider_id)->value('fcm_id');
-            $firebaseService->sendToDevice('rider', $rider_fcm, $title, $body);
+            $customer_fcm = User::where('id', $ride->customer_id)->value('fcm_id');
+            $firebaseService->sendToDevice('rider', $rider_fcm, $title, $body,['ride_id' => $ride->id, 'ride_status' => $ride->status,'type' => 'payment']);
+            $firebaseService->sendToDevice('customer', $customer_fcm, 'Trip has ended',"share your feedback about your trip",['ride_id' => $ride->id, 'ride_status' => $ride->status,'type' => 'feedback']);
             $data = [
                 'ride_id' => $ride->id,
                 'amount' => $request->final_fare,

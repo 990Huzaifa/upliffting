@@ -14,7 +14,7 @@ function dateTimeFormat($date)
 function getNearbyRiders(float $customerLat, float $customerLng, float $radiusKm = 2.5)
 {
     $query = "
-        SELECT users.*, 
+        SELECT users.lat,users.lng, 
             (
                 6371 * acos(
                     LEAST(1.0,

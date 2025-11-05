@@ -33,7 +33,7 @@ function getNearbyRiders(float $customerLat, float $customerLng, float $radiusKm
           AND riders.online_status = 'online'
           AND vehicles.is_driving = 'active'
           AND NOT EXISTS (
-              SELECT 1 FROM upliftingApp.rides 
+              SELECT 1 FROM rides 
               WHERE rides.rider_id = users.id 
                 AND rides.status IN ('on a way', 'arrived', 'started', 'completed','payment success')
           )

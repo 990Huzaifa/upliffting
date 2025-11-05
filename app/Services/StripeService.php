@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Exception;
+use Illuminate\Support\Facades\Log;
 use Stripe\Account;
 use Stripe\AccountLink;
 use Stripe\PaymentMethod;
@@ -22,30 +23,76 @@ class StripeService
     }
 
 
-
-    public function createPaymentIntent($customerId, $paymentMethodId, $amount, $driverAccountId)
+    /**
+     * Processes a customer payment, applies a 25% platform commission, and transfers
+     * the remainder plus any tip to the connected rider account.
+     *
+     * @param string $paymentMethodId The customer's payment method ID (e.g., 'pm_card_visa').
+     * @param int $amount The total amount to charge the customer, in the smallest currency unit (e.g., cents/pennies).
+     * @param string $riderStripeAccountId The Stripe Connect Account ID of the rider (e.g., 'acct_XXXXXXXXXXXXXX').
+     * @param string $currency The currency code (e.g., 'usd', 'gbp').
+     * @param int $tipAmount Optional. The tip amount to send entirely to the rider, in smallest currency unit. Defaults to 0.
+     * @return \Stripe\PaymentIntent The successfully processed PaymentIntent object.
+     * @throws ApiErrorException If the payment or transfer fails.
+     */
+    public function chargeAndTransfer(string $paymentMethodId,int $amount,string $riderStripeAccountId,string $currency,int $tipAmount = 0): PaymentIntent
     {
-        try{
-            // set commission of 25%
         $amountInCents = $amount * 100;
+        $platformCommissionPercentage = 0.25;
 
-        // Calculate 25% commission
-        $commission = intval($amountInCents * 0.25);
+        $platformCommissionAmount = (int) round($amountInCents * $platformCommissionPercentage);
 
-        $paymentIntent = PaymentIntent::create([
-            'amount' => $amountInCents, // in cents
-            'currency' => 'usd',
-            'customer' => $customerId,
-            'payment_method' => $paymentMethodId,
-            'confirm' => true,
-            'transfer_data' => [
-                'destination' => $driverAccountId, // driver ka connected account ID
-            ],
-            'application_fee_amount' => $commission, // tumhara commission (in cents)
-        ]);
+        // The remaining amount after commission (75% of base charge)
+        $amountToRiderBeforeTip = $amountInCents - $platformCommissionAmount;
+
+        // The total amount to transfer to the rider (75% base + 100% tip)
+        $totalAmountToRider = $amountToRiderBeforeTip + $tipAmount;
+
+        if ($amountInCents <= 0 || $totalAmountToRider < 0) {
+            throw new \InvalidArgumentException('Invalid charge or transfer amount.');
+        }
+        if ($totalAmountToRider > $amountInCents) {
+             throw new \InvalidArgumentException('Transfer amount cannot exceed total charge amount.');
+        }
+        try{
+            $paymentIntent = PaymentIntent::create([
+                'amount' => $amountInCents,
+                'currency' => $currency,
+                'payment_method' => $paymentMethodId,
+                'confirm' => true, // Confirm the payment immediately
+                'off_session' => true, // Use off_session if charging an existing card
+                
+                // The Platform Fee: This amount is deducted from the total charge and goes to your platform's balance.
+                'application_fee_amount' => $platformCommissionAmount,
+                
+                // The Transfer: This handles transferring the remaining funds (75% + Tip) to the rider.
+                'transfer_data' => [
+                    'destination' => $riderStripeAccountId,
+                    'amount' => $totalAmountToRider,
+                ],
+                
+                // Optional: Add metadata for your records
+                'metadata' => [
+                    'rider_account_id' => $riderStripeAccountId,
+                    'platform_commission' => $platformCommissionAmount,
+                    'base_fare_transfer' => $amountToRiderBeforeTip,
+                    'tip_amount' => $tipAmount,
+                ],
+            ]);
+
+            if ($paymentIntent->status !== 'succeeded') {
+                throw new Exception("PaymentIntent status was '{$paymentIntent->status}' instead of 'succeeded'.");
+            }
 
             return $paymentIntent;
         } catch (ApiErrorException $e) {
+            // Log the error for debugging purposes
+            Log::error('Stripe Charge and Transfer Failed: ' . $e->getMessage(), [
+                'code' => $e->getStripeCode(),
+                'intent_id' => $paymentIntent->id ?? 'N/A',
+                'rider_id' => $riderStripeAccountId,
+            ]);
+            // Re-throw the exception so the calling controller/job can handle the response
             return [
                 'success' => false,
                 'error' => $e->getMessage(),

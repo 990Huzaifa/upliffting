@@ -20,6 +20,7 @@ return new class extends Migration
             $table->unsignedBigInteger('rider_id')->nullable();
             $table->foreign('rider_id')->references('id')->on('users')->onUpdate('set null')->onDelete('set null');
             $table->decimal('amount', 18, 2);
+            $table->decimal('tip', 18, 2)->default(0);
             $table->unsignedBigInteger('payment_method_id')->nullable();
             $table->foreign('payment_method_id')->references('id')->on('user_accounts')->onUpdate('set null')->onDelete('set null');
             $table->string('transaction_id')->nullable();

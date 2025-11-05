@@ -238,3 +238,9 @@ function myMailSend($to, $name, $subject, $message, $link = null, $data = null){
     }
     return true;
 }
+
+function currencybyIP($ip){
+    $response = file_get_contents("http://ip-api.com/json/{$ip}");
+    $data = json_decode($response, true);
+    return $data['currency'];
+}

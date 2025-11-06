@@ -30,6 +30,7 @@ class Rides extends Model
         'cancelled_by',
         'is_shared',
         'cancel_by_role',
+        'arrived_at',
         'stated_at',
         'completed_at'
     ];

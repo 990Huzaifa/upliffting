@@ -14,6 +14,7 @@ class VehicleTypeRate extends Model
         'base_price',
         'price_per_km',
         'price_per_min',
+        'wait_time',
         'booking_fee',
         'country_id',
         'state_id',

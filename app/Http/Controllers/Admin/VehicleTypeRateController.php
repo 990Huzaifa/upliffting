@@ -78,6 +78,7 @@ class VehicleTypeRateController extends Controller
                 'country_id' => 'required',
                 'state_id' => 'required',
                 'city_id' => 'required',
+                'wait_time' => 'nullable|numeric',
             ],[
                 'vehicle_type_id.required' => 'Vehicle type is required',
                 'vehicle_type_id.exists' => 'Vehicle type does not exist',
@@ -88,6 +89,7 @@ class VehicleTypeRateController extends Controller
                 'country_id.required' => 'Country is required',
                 'state_id.required' => 'State is required',
                 'city_id.required' => 'City is required',
+                'wait_time.numeric' => 'Wait time must be numeric',
             ]);
             if ($validator->fails()) throw new Exception($validator->errors()->first(), 400);
 
@@ -97,6 +99,7 @@ class VehicleTypeRateController extends Controller
                 'base_price' => $request->base_price,
                 'price_per_km' => $request->price_per_km,
                 'price_per_min' => $request->price_per_min,
+                'wait_time' => $request->wait_time,
                 'country_id' => $request->country_id,
                 'state_id' => $request->state_id,
                 'city_id' => $request->city_id,
@@ -146,6 +149,7 @@ class VehicleTypeRateController extends Controller
                 'base_price' => 'required',
                 'price_per_km' => 'required',
                 'price_per_min' => 'required',
+                'wait_time' => 'nullable|numeric',
             ],[
                 'vehicle_type_id.required' => 'Vehicle type is required',
                 'vehicle_type_id.exists' => 'Vehicle type does not exist',
@@ -156,6 +160,7 @@ class VehicleTypeRateController extends Controller
                 'base_price.required' => 'Base price is required',
                 'price_per_km.required' => 'Price per km is required',
                 'price_per_min.required' => 'Price per min is required',
+                'wait_time.numeric' => 'Wait time must be a number',
             ]);
 
             if ($validator->fails())throw new Exception($validator->errors()->first(),400);
@@ -171,6 +176,7 @@ class VehicleTypeRateController extends Controller
                 'base_price' => $request->base_price,
                 'price_per_km' => $request->price_per_km,
                 'price_per_min' => $request->price_per_min,
+                'wait_time' => $request->wait_time ?? 5,
                 'country_id' => $request->country_id,
                 'state_id' => $request->state_id,
                 'city_id' => $request->city_id,

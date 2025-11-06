@@ -18,6 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('country_id');
             $table->unsignedBigInteger('state_id');
             $table->unsignedBigInteger('city_id');
+            $table->bigInteger('wait_time')->default(5);
             $table->decimal('base_price',8,2);
             $table->decimal('price_per_km',8,2);
             $table->decimal('price_per_min',8,2);

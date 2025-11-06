@@ -127,6 +127,9 @@ class RideController extends Controller
                     $ride->id,
                     $data
                 ));
+                $ride->update([
+                    'arrived_at' => now('UTC'),
+                ]);
             } elseif ($status == 'started') {
                 $title = 'Ride Started!';
                 $firebase->sendToDevice('customer',$customer_fcm,$title,"Your ride has started now",['rideId' => $id,'status' => $status,'type' =>'ride_status']);

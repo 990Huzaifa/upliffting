@@ -210,10 +210,17 @@ class StripeService
             if (in_array($country, ['US', 'GB', 'CA', 'AU', 'SG'])) {
                 $capabilities['card_payments'] = ['requested' => true];
             }
+            $tos = null;
+
+            if ($type === 'custom') {
+                // For Custom accounts, set the correct service agreement
+                if (in_array($country, ['US', 'CA', 'GB', 'AU'])) {
+                    $tos = ['service_agreement' => 'recipient'];
+                }
+            }
             $account = Account::create([
                 'type' => $type, // Custom account
                 'country' => $country,
-                'tos_acceptance' => ['service_agreement' => 'recipient'],
                 'email' => $email, // Optional, agar aap pehle se email dena chahte hain
                 'capabilities' => $capabilities,
                 'settings' => [
@@ -222,6 +229,9 @@ class StripeService
                     ],
                 ]
             ]);
+            if ($tos) {
+                $account['tos_acceptance'] = $tos;
+            }
 
             return [
                 'success' => true,

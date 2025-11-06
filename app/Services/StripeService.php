@@ -203,35 +203,21 @@ class StripeService
     public function  createConnectedAccount(string $email, string $country,string $type = 'custom')
     {
         try {
-            $capabilities = [
-                'transfers' => ['requested' => true],
-            ];
 
-            if (in_array($country, ['US', 'GB', 'CA', 'AU', 'SG'])) {
-                $capabilities['card_payments'] = ['requested' => true];
-            }
-            $tos = null;
-
-            if ($type === 'custom') {
-                // For Custom accounts, set the correct service agreement
-                if (in_array($country, ['US', 'CA', 'GB', 'AU'])) {
-                    $tos = ['service_agreement' => 'recipient'];
-                }
-            }
             $account = Account::create([
                 'type' => $type, // Custom account
-                'country' => $country,
+                'country' => 'US',
                 'email' => $email, // Optional, agar aap pehle se email dena chahte hain
-                'capabilities' => $capabilities,
+                'capabilities' => [
+                    'transfers' => ['requested' => true],
+                    'card_payments' => ['requested' => true],
+                ],
                 'settings' => [
                     'payouts' => [
                         'schedule' => ['interval' => 'manual'], // Manual payouts rakhein shuruat mein
                     ],
                 ]
             ]);
-            if ($tos) {
-                $account['tos_acceptance'] = $tos;
-            }
 
             return [
                 'success' => true,

@@ -206,6 +206,7 @@ class StripeService
             $account = Account::create([
                 'type' => $type, // Express account, Custom UI ke liye best
                 'country' => $country,
+                'tos_acceptance' => ['service_agreement' => 'recipient'],
                 'email' => $email, // Optional, agar aap pehle se email dena chahte hain
                 'capabilities' => [ // Zaroori capabilities set karein
                     'transfers' => ['requested' => true],

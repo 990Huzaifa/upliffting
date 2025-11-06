@@ -138,6 +138,9 @@ class RideController extends Controller
                     $ride->id,
                     $data
                 ));
+                $ride->update([
+                    'started_at' => now('UTC'),
+                ]);
             } elseif ($status == 'completed') {
                 // update ride
                 $ride->update([
@@ -359,9 +362,10 @@ class RideController extends Controller
         // Example fare calculation logic
         $ride = Rides::find($ride_id);
         $vtr = VehicleTypeRate::find($ride->vehicle_type_rate_id);
-
+        $waitTimeInMinutesCharge = $ride->wait_time;
         $perKmRate = $vtr->per_km_rate;
         $perMinuteRate = $vtr->per_minute_rate;
+
         // get time difference in minuts by stated_at to completed_at
         //  --- IGNORE ---
         $startTime = Carbon::parse($ride->stated_at);
@@ -372,6 +376,15 @@ class RideController extends Controller
         $finalFare = $ride->base_fare;
         if ($ride->duration < $actualMinutes ) {
             $extraMinutes = $actualMinutes  - $ride->duration;
+            // check if wait time is cross or not by difference from arrived_at to stated_at
+            $arrivedTime = Carbon::parse($ride->arrived_at);
+            $statedTime = Carbon::parse($ride->stated_at);
+            $waitTimeInMinutes = $arrivedTime->diffInMinutes($statedTime);
+
+            if ($waitTimeInMinutes > $waitTimeInMinutesCharge) {
+                $extraMinutes += $waitTimeInMinutes - $waitTimeInMinutesCharge;
+            }
+
             // calculate total fare
             $finalFare = $ride->base_fare + ($perMinuteRate * $extraMinutes);
         }

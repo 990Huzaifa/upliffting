@@ -11,6 +11,7 @@ use App\Jobs\NotifyRiderNoRide;
 use App\Models\Customer;
 use App\Models\Payment;
 use App\Models\RatingReview;
+use App\Models\Rider;
 use App\Models\Rides;
 use App\Models\RidesDropOff;
 use App\Models\User;
@@ -84,7 +85,7 @@ class RideController extends Controller
             ]);
 
             // fire event
-
+            $riderData = Rider::where('user_id', $user->id)->first();
             $data = [
                 'rideId' => $id,
                 'status' => $status,
@@ -94,7 +95,8 @@ class RideController extends Controller
                 'riderPhone' => $user->phone,
                 'riderLat' => $user->lat,
                 'riderLng' => $user->lng,
-                'riderRating' => $user->rating,
+                'riderRating' => $riderData->current_rating,
+                'total_rides' => $riderData->total_rides,
                 'vehicleInfo' => [
                     'id' => $vehicle->id,
                     'make' => $vehicle->make,

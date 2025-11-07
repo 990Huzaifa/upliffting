@@ -8,6 +8,7 @@ use App\Events\RideCancelled;
 use App\Http\Controllers\Controller;
 use App\Jobs\NotifyRiderNoRide;
 use App\Jobs\SearchNearbyRidersJob;
+use App\Models\Customer;
 use App\Models\Payment;
 use App\Models\PromoCode;
 use App\Models\RatingReview;
@@ -398,7 +399,8 @@ class RideController extends Controller
                 'status' => 'payment success',
             ];
             broadcast(new RideAccepted($title, $ride->id, $data));
-
+            $customerData = Customer::where('user_id', $ride->customer_id)->first();
+            $customerData->increment('total_rides');
             return response()->json(['message' => 'Payment and tip processed successfully.'], 200);
         } catch (QueryException $e) {
             return response()->json(['DB error' => $e->getMessage()], 500);

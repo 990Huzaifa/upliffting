@@ -493,7 +493,7 @@ class RideController extends Controller
                 $customer->update(['current_rating' => $averageRating]);
             }
 
-            return response()->json(['message' => 'Ride rated successfully.'], 200);
+            return response()->json(['message' => 'Ride rated successfully.', 'customer', $customer], 200);
 
         } catch (QueryException $e) {
             return response()->json(['DB error' => $e->getMessage()], 500);

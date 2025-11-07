@@ -249,7 +249,7 @@ function currencybyIP($ip){
 
 
 function getExtraWaitTimeCharges($ride){
-    $vtr = VehicleTypeRate::find('id', $ride->vehicle_type_rate_id);
+    $vtr = VehicleTypeRate::find($ride->vehicle_type_rate_id);
     $waitTimeInMinutesCharge = $vtr->wait_time;
     $perMinuteRate = $vtr->per_minute_rate;
     $extraMinutes = 0;

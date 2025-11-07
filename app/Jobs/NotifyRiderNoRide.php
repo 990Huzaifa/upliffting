@@ -18,7 +18,7 @@ class NotifyRiderNoRide implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $rideId;
-    public $timeout = 30;
+    public $timeout = 60;
 
     public function __construct($rideId,)
     {

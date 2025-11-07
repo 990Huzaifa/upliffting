@@ -85,7 +85,7 @@ class RideController extends Controller
                 $surge_multiplier = getSurgeMultiplier($rate->id, $currentTime, $day, $ip);
 
                 // Fare formula
-                $actual_fare = ($rate->base_fare + ($distance_km * $rate->price_per_km) + ($time_min * $rate->price_per_min)) * $surge_multiplier;
+                $actual_fare = ($rate->base_price + ($distance_km * $rate->price_per_km) + ($time_min * $rate->price_per_min)) * $surge_multiplier;
 
                 $fareList[] = [
                     'id' => $rate->id,

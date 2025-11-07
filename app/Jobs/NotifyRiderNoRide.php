@@ -18,6 +18,7 @@ class NotifyRiderNoRide implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $rideId;
+    public $timeout = 30;
 
     public function __construct($rideId,)
     {
@@ -31,7 +32,7 @@ class NotifyRiderNoRide implements ShouldQueue
     {
         $ride = Rides::find($this->rideId);
 
-        if (!$ride || $ride->status !== 'finding' || $ride->status === 'cancelled') {
+        if ($ride->status !== 'finding') {
             $riders = $this->findNearbyRiders($ride);
             $riderIds = collect($riders)->pluck('id')->toArray();
             $riderIds = collect($riders)->pluck('id')->toArray();

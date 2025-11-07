@@ -112,7 +112,6 @@ class RideController extends Controller
                     $data
                 ));
                 // update ride started at in UTC
-                $ride->update(['stated_at' => now('UTC')]);
                 EmitRiderLocationJob::dispatch($id, $user->id);
                 NotifyRiderNoRide::dispatch($id);
                 $firebase->sendToDevice('customer',$customer_fcm,$title,"Driver is comming for you",['rideId' => $id,'status' => $status, 'type' =>'ride_status']);
@@ -138,12 +137,12 @@ class RideController extends Controller
                     $data
                 ));
                 // add wait time in minutes
-                $stated_at = now('UTC');
+                $started_at = now('UTC');
                 $arrivedTime = Carbon::parse($ride->arrived_at);
-                $statedTime = Carbon::parse($stated_at);
-                $waitTimeInMinutes = $arrivedTime->diffInMinutes($statedTime);
+                $startedTime = Carbon::parse($started_at);
+                $waitTimeInMinutes = $arrivedTime->diffInMinutes($startedTime);
                 $ride->update([
-                    'started_at' => $stated_at,
+                    'started_at' => $started_at,
                     'wait_time' => $waitTimeInMinutes
                 ]);
             } elseif ($status == 'completed') {
@@ -371,39 +370,59 @@ class RideController extends Controller
         // Example fare calculation logic
         $ride = Rides::find($ride_id);
         $vtr = VehicleTypeRate::find($ride->vehicle_type_rate_id);
-        $waitTimeInMinutesCharge = $vtr->wait_time;
-        $perKmRate = $vtr->per_km_rate;
-        $perMinuteRate = $vtr->per_minute_rate;
-        // now update fase by distance
-        $distance = $ride->distance;
 
-        // get time difference in minuts by stated_at to completed_at
-        //  --- IGNORE ---
-        $startTime = Carbon::parse($ride->stated_at);
+        // Vehicle type rate fields
+        $waitTimeFreeLimit = $vtr->wait_time;            // free waiting time in minutes
+        $perKmRate = $vtr->per_km_rate;                  // fare per km
+        $perMinuteRate = $vtr->per_minute_rate;          // fare per minute
+
+        
+
+        // Ride info
+        $distance = $ride->distance;                       // total distance in km
+        $startTime = Carbon::parse($ride->started_at);
         $endTime = Carbon::parse($ride->completed_at);
         $actualMinutes  = $endTime->diffInMinutes($startTime);
 
-        // check if the ride->duration(in minutes) is less than actualMinutes  then sum that extra time to actualMinutes 
-        $finalFare = $ride->base_fare;
-        if ($ride->duration < $actualMinutes ) {
-            $extraMinutes = $actualMinutes  - $ride->duration;
-            // check if wait time is cross or not by difference from arrived_at to stated_at
 
-            $waitTimeInMinutes = $ride->wait_time;
+        $baseFare = $ride->base_fare ?? 0;
+        $rideDuration = $ride->duration ?? 0;            // estimated minutes
+        $waitTime = $ride->wait_time ?? 0;               // total wait time in minutes
 
-            if ($waitTimeInMinutes > $waitTimeInMinutesCharge) {
-                $extraMinutes += $waitTimeInMinutes - $waitTimeInMinutesCharge;
-            }
-            $currentTime = currentTimeByIP($ip, 'H:i:s');  // Example: '14:30:00'
-            $day = currentdayByIP($ip, 'l'); 
-            $surgeRate = getSurgeMultiplier($ride->vehicle_type_rate_id, $currentTime, $day, $ip);
-            // calculate total fare
-            $finalFare = ($ride->base_fare + ($perKmRate * $distance) + ($perMinuteRate * $extraMinutes));
+        // ------------------------------------
+        // ✅ Step 1: Calculate extra minutes
+        // ------------------------------------
+        $extraMinutes = 0;
+
+        // if ride took longer than estimated duration
+        if ($actualMinutes > $rideDuration) {
+            $extraMinutes += $actualMinutes - $rideDuration;
         }
-        
-        
-        
-        
+
+        // if waiting time exceeds free limit
+        if ($waitTime > $waitTimeFreeLimit) {
+            $extraMinutes += ($waitTime - $waitTimeFreeLimit);
+        }
+
+
+        // ------------------------------------
+        // ✅ Step 2: Get surge multiplier
+        // ------------------------------------
+        $currentTime = currentTimeByIP($ip, 'H:i:s');  // e.g. '14:30:00'
+        $currentDay = currentdayByIP($ip, 'l');        // e.g. 'Monday'
+        $surgeRate = getSurgeMultiplier($ride->vehicle_type_rate_id, $currentTime, $currentDay, $ip);
+
+        // ------------------------------------
+        // ✅ Step 3: Calculate final fare
+        // ------------------------------------
+        $finalFare = $baseFare + ($perKmRate * $distance) + ($perMinuteRate * $actualMinutes) + ($perMinuteRate * $extraMinutes);
+
+        // Apply surge multiplier if > 1
+        if ($surgeRate > 1) {
+            $finalFare *= $surgeRate;
+        }
+
+        // Round and update ride
         $ride->update([
             'final_fare' => round($finalFare, 2),
         ]);

@@ -42,7 +42,7 @@ return new class extends Migration
             $table->bigInteger('current_rating')->default(0);
             // stated_at to completed_at time
             $table->dateTime('arrived_at')->nullable();
-            $table->dateTime('stated_at')->nullable();
+            $table->dateTime('started_at')->nullable();
             $table->dateTime('completed_at')->nullable();
             $table->timestamps();
         });

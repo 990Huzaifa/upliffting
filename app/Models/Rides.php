@@ -32,7 +32,7 @@ class Rides extends Model
         'is_shared',
         'cancel_by_role',
         'arrived_at',
-        'stated_at',
+        'started_at',
         'completed_at'
     ];
 }

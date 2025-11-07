@@ -68,7 +68,6 @@ class RideController extends Controller
             $vehicle = Vehicle::where('vehicle_of', $user->id)->where('is_driving', 'active')->first();
             if (!$vehicle)
                 throw new Exception('You have no active vehicle', 400);
-            // if($vehicle->approved_at == null) throw new Exception('Your vehicle is not approved', 400);
             // retrive fcm of customer
             $customer_fcm = User::where('id', $ride->customer_id)->value('fcm_id');
             $firebase = new FirebaseService();
@@ -138,17 +137,24 @@ class RideController extends Controller
                     $ride->id,
                     $data
                 ));
+                // add wait time in minutes
+                $stated_at = now('UTC');
+                $arrivedTime = Carbon::parse($ride->arrived_at);
+                $statedTime = Carbon::parse($stated_at);
+                $waitTimeInMinutes = $arrivedTime->diffInMinutes($statedTime);
                 $ride->update([
-                    'started_at' => now('UTC'),
+                    'started_at' => $stated_at,
+                    'wait_time' => $waitTimeInMinutes
                 ]);
             } elseif ($status == 'completed') {
                 // update ride
                 $ride->update([
+                    'distance' => $request->distance,
                     'completed_at' => now('UTC'),
                     'status' => 'completed',
                 ]);
                 // calculate final fare
-                $updatedRide = $this->calculateFinalFare($ride->id);
+                $updatedRide = $this->calculateFinalFare($ride->id, $request->ip());
                 // make data to send
                 $payment_id = Payment::where('ride_id',$ride->id)->value('payment_method_id');
                 $customerAccount = UserAccount::find($payment_id);
@@ -357,7 +363,7 @@ class RideController extends Controller
         }
     }
 
-    private function calculateFinalFare($ride_id)
+    private function calculateFinalFare($ride_id, $ip)
     {
         // Example fare calculation logic
         $ride = Rides::find($ride_id);
@@ -365,6 +371,8 @@ class RideController extends Controller
         $waitTimeInMinutesCharge = $ride->wait_time;
         $perKmRate = $vtr->per_km_rate;
         $perMinuteRate = $vtr->per_minute_rate;
+        // now update fase by distance
+        $distance = $ride->distance;
 
         // get time difference in minuts by stated_at to completed_at
         //  --- IGNORE ---
@@ -384,11 +392,15 @@ class RideController extends Controller
             if ($waitTimeInMinutes > $waitTimeInMinutesCharge) {
                 $extraMinutes += $waitTimeInMinutes - $waitTimeInMinutesCharge;
             }
-
+            $currentTime = currentTimeByIP($ip, 'H:i:s');  // Example: '14:30:00'
+            $day = currentdayByIP($ip, 'l'); 
+            $surgeRate = getSurgeMultiplier($ride->vehicle_type_rate_id, $currentTime, $day, $ip);
             // calculate total fare
-            $finalFare = $ride->base_fare + ($perMinuteRate * $extraMinutes);
+            $finalFare = ($ride->base_fare + ($perKmRate * $distance) + ($perMinuteRate * $extraMinutes));
         }
-        // adjust rate in the base fare by extraMinutes 
+        
+        
+        
         
         $ride->update([
             'final_fare' => round($finalFare, 2),

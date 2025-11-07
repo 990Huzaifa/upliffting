@@ -31,6 +31,7 @@ return new class extends Migration
             $table->decimal('distance', 8, 2)->nullable();
             $table->bigInteger('duration')->nullable();  
             $table->decimal('base_fare', 8, 2);
+            $table->bigInteger('wait_time')->default(0);
             $table->decimal('discount_amount', 8, 2)->nullable();
             // pending(for schedule booking), finding, on a way, arrived, started, cancelled, completed
             $table->enum('status', ['pending', 'finding', 'on a way', 'arrived', 'started', 'cancelled', 'completed', 'payment success','end trip'])->default('pending');

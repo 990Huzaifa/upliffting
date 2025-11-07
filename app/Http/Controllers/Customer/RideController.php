@@ -150,7 +150,7 @@ class RideController extends Controller
                     ->firstOrFail();
             }
             // 2:step store ride data
-
+            $waitTime = VehicleTypeRate::where('id', $request->vehicle_type_rate_id)->value('wait_time');
             $ride = Rides::create([
                 'customer_id' => $user->id,
                 'vehicle_type_rate_id' => $request->vehicle_type_rate_id,
@@ -162,6 +162,7 @@ class RideController extends Controller
                 'distance' => $request->distance,
                 'duration' => $request->duration / 60, // Convert seconds to minutes
                 'base_fare' => $request->base_fare - ($request->discount_amount ?? 0),
+                'wait_time' => $waitTime,
                 'discount_amount' => $request->discount_amount ?? 0,
             ]);
 

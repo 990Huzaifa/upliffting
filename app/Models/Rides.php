@@ -18,6 +18,7 @@ class Rides extends Model
         'status',
         'dropoff_location',
         'base_fare',
+        'wait_time',
         'discount_amount',
         'distance',
         'duration',

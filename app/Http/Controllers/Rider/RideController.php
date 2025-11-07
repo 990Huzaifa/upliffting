@@ -478,17 +478,17 @@ class RideController extends Controller
             // update customer overall rating
             $customer = Customer::where('user_id', $ride->customer_id)->first();
             if ($customer) {
-                $totalRiderRatings = RatingReview::where('customer_id', $ride->customer_id)
+                $totalCustomerRatings = RatingReview::where('customer_id', $ride->customer_id)
                     ->where('send_by', 'rider_to_customer')
                     ->where('rating', '>', 0)
                     ->count();
 
-                $sumRiderRatings = RatingReview::where('rider_id', $ride->customer_id)
+                $sumCustomerRatings = RatingReview::where('customer_id', $ride->customer_id)
                     ->where('send_by', 'rider_to_customer')
                     ->where('rating', '>', 0)
                     ->sum('rating');
 
-                $averageRating = $totalRiderRatings > 0 ? round($sumRiderRatings / $totalRiderRatings, 2) : 0;
+                $averageRating = $totalCustomerRatings > 0 ? round($sumCustomerRatings / $totalCustomerRatings, 2) : 0;
 
                 $customer->update(['current_rating' => $averageRating]);
             }

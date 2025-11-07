@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\SurgeRate;
+use App\Models\Vehicle;
+use App\Models\VehicleTypeRate;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -243,4 +245,17 @@ function currencybyIP($ip){
     $response = file_get_contents("http://ip-api.com/json/{$ip}");
     $data = json_decode($response, true);
     return $data['currency'];
+}
+
+
+function getExtraWaitTimeCharges($ride){
+    $vtr = VehicleTypeRate::find('id', $ride->vehicle_type_rate_id);
+    $waitTimeInMinutesCharge = $vtr->wait_time;
+    $perMinuteRate = $vtr->per_minute_rate;
+    $extraMinutes = 0;
+    // check if wait time is cross or not by difference from arrived_at to stated_at
+    if ($ride->wait_time > $waitTimeInMinutesCharge) {
+        $extraMinutes += $ride->wait_time - $waitTimeInMinutesCharge;
+    }
+    return $extraMinutes * $perMinuteRate;
 }

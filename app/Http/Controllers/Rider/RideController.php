@@ -158,11 +158,14 @@ class RideController extends Controller
                 // make data to send
                 $payment_id = Payment::where('ride_id',$ride->id)->value('payment_method_id');
                 $customerAccount = UserAccount::find($payment_id);
+                $waitTimeCharge = getExtraWaitTimeCharges($updatedRide);
                 $finalData = [
                     'rideId' => $id,
                     'status' => $status,
                     'finalFare' => $updatedRide->final_fare,
                     'pickupLocation'=>$updatedRide->pickup_location,
+                    'distance'=>$updatedRide->distance,
+                    'waitTimeCharge'=>$waitTimeCharge,
                     'dropoffLocations'=> RidesDropOff::where('ride_id',$updatedRide->id)->pluck('drop_location')->toArray(),
                     'riderInfo'=>[
                         'riderId' => $user->id,
@@ -368,7 +371,7 @@ class RideController extends Controller
         // Example fare calculation logic
         $ride = Rides::find($ride_id);
         $vtr = VehicleTypeRate::find($ride->vehicle_type_rate_id);
-        $waitTimeInMinutesCharge = $ride->wait_time;
+        $waitTimeInMinutesCharge = $vtr->wait_time;
         $perKmRate = $vtr->per_km_rate;
         $perMinuteRate = $vtr->per_minute_rate;
         // now update fase by distance
@@ -385,9 +388,8 @@ class RideController extends Controller
         if ($ride->duration < $actualMinutes ) {
             $extraMinutes = $actualMinutes  - $ride->duration;
             // check if wait time is cross or not by difference from arrived_at to stated_at
-            $arrivedTime = Carbon::parse($ride->arrived_at);
-            $statedTime = Carbon::parse($ride->stated_at);
-            $waitTimeInMinutes = $arrivedTime->diffInMinutes($statedTime);
+
+            $waitTimeInMinutes = $ride->wait_time;
 
             if ($waitTimeInMinutes > $waitTimeInMinutesCharge) {
                 $extraMinutes += $waitTimeInMinutes - $waitTimeInMinutesCharge;

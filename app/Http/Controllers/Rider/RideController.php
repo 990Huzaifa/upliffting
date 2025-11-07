@@ -375,7 +375,7 @@ class RideController extends Controller
         $waitTimeFreeLimit = $vtr->wait_time;            // free waiting time in minutes
         $perKmRate = $vtr->per_km_rate;                  // fare per km
         $perMinuteRate = $vtr->per_minute_rate;          // fare per minute
-
+        $baseFare = $vtr->base_price;
         
 
         // Ride info
@@ -385,9 +385,9 @@ class RideController extends Controller
         $actualMinutes  = $endTime->diffInMinutes($startTime);
 
 
-        $baseFare = $ride->base_fare ?? 0;
-        $rideDuration = $ride->duration ?? 0;            // estimated minutes
-        $waitTime = $ride->wait_time ?? 0;               // total wait time in minutes
+        
+        $rideDuration = $ride->duration;            // estimated minutes
+        $waitTime = $ride->wait_time;               // total wait time in minutes
 
         // ------------------------------------
         // ✅ Step 1: Calculate extra minutes

@@ -196,6 +196,7 @@ class RideController extends Controller
                 $ride->update([
                     'status' => 'end trip',
                 ]);
+                $riderData->increment('total_rides');
                 $rider_fcm = User::find($ride->rider_id)->value('fcm_id');
                 $firebase->sendToDevice('rider',$rider_fcm,'Trip has ended',"Review your customer",['rideId' => $id,'status' => $status, 'type' =>'feedback']);
             }

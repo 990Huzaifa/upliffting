@@ -145,7 +145,7 @@
             font-family: 'Courier New', monospace;
             font-size: 48px;
             font-weight: 800;
-            color: #ffffff;
+            color: #000000ff;
             letter-spacing: 8px;
             word-break: break-all;
             margin-bottom: 20px;

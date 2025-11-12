@@ -119,6 +119,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
             //  vechicle
             Route::apiResource('vehicles',  AdminVehicleController::class)->only('index', 'show');
+            Route::get('vehicle-approve/{id}', [AdminVehicleController::class, 'approveVehicle']);
 
             Route::post('vehicles/approve/{id}', [AdminVehicleController::class, 'approveVehicle']);
             Route::post('vehicles/approve-inspection/{id}', [AdminVehicleController::class, 'updateInspection'])->name('.update-inspection');

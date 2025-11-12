@@ -53,6 +53,11 @@ Route::prefix('rider')->group(function () {
         Route::get('/stripe/onboarding/refresh/{id}', 'refreshOnboardingLink');
         Route::get('/stripe/onboarding/success/{id}', 'successOnboardingLink');
     });
+
+    Route::controller(RiderProfileController::class)->group(function () {
+            Route::get('/pnp', 'pnp');
+            Route::get('/tnc', 'tnc');
+    });
 });
 
 // for customer
@@ -63,6 +68,11 @@ Route::prefix('customer')->group(function () {
     Route::post('/forgot-password', [CustomerAuth::class, 'forgotPassword']);
     Route::post('/reset-password', [CustomerAuth::class, 'resetPassword']);
     Route::put('/verify/{token}/{email}', [CustomerAuth::class, 'verification']);
+
+    Route::controller(CustomerProfileController::class)->group(function () {
+            Route::get('/pnp', 'pnp');
+            Route::get('/tnc', 'tnc'); 
+    });
 });
 
 // for admin
@@ -181,6 +191,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         // profile
         Route::controller(RiderProfileController::class)->group(function () {
+
             Route::get('/profile', 'profile');
             Route::post('/edit-profile', 'editProfile');
 
@@ -194,8 +205,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::put('/go-online', 'goOnline');
             Route::put('/is-pet', 'pet');
             Route::get('/about', 'about');
-            Route::get('/pnp', 'pnp');
-            Route::get('/tnc', 'tnc');
             Route::post('/contact', 'contactStore');   
 
             Route::post('/update-lat-long', 'updateLatLong');
@@ -237,11 +246,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
             
         });
 
-        Route::controller(CustomerProfileController::class)->group(function () {
+        Route::controller(CustomerProfileController::class)->group(function () {        
             Route::get('/profile', 'profile');
             Route::get('/about', 'about');
-            Route::get('/pnp', 'pnp');
-            Route::get('/tnc', 'tnc');            
             Route::post('/contact', 'contactStore');            
         });
 
